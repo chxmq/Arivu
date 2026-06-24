@@ -1,0 +1,26 @@
+# ── OS / editor junk ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ── Environment / secrets (never commit) ──────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# ── Dependencies / build output ───────────────────────────────
+node_modules/
+dist/
+build/
+
+# NOTE: each sub-project (arivu-mobile-app, arivu-web-hub) also
+# has its own .gitignore with tooling-specific rules.

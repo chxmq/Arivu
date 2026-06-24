@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arivu Command</title>
+  <meta name="description" content="Arivu operations dashboard — corpus, sentinels, and field sync." />
+  <link rel="icon" href="assets/logo-leaf.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/command.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/logo-leaf.png" alt="" width="24" height="24" />
+        <div>
+          <strong>ARIVU</strong>
+          <span>Command</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <button type="button" class="nav-btn active" data-view="overview">Overview</button>
+        <button type="button" class="nav-btn" data-view="system">System</button>
+        <button type="button" class="nav-btn" data-view="dataset">Dataset</button>
+        <button type="button" class="nav-btn" data-view="corpus">Corpus <span class="badge" id="navCorpusCount">0</span></button>
+        <button type="button" class="nav-btn" data-view="sentinels">Sentinels <span class="badge" id="navSentinelCount">0</span></button>
+        <button type="button" class="nav-btn" data-view="feeds">Live feeds</button>
+        <button type="button" class="nav-btn" data-view="map">Map</button>
+        <button type="button" class="nav-btn" data-view="activity">Activity</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="hub-pill" id="hubPill"><span class="dot"></span> Hub</div>
+        <p class="mono" id="lastSync">—</p>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">Overview</h1>
+          <p id="viewSubtitle">Western Ghats field operations</p>
+        </div>
+        <div class="topbar-actions">
+          <label class="search-wrap" id="searchWrap" hidden>
+            <input type="search" id="corpusSearch" placeholder="Search corpus…" />
+          </label>
+          <button type="button" class="btn" id="refreshBtn">↻ Refresh</button>
+        </div>
+      </header>
+
+      <!-- OVERVIEW -->
+      <section class="view active" id="view-overview">
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-label">Corpus entries</span>
+            <strong class="stat-value" id="statCorpus">0</strong>
+            <span class="stat-meta" id="statCorpusMeta">from Saakshi app</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Sentinels online</span>
+            <strong class="stat-value" id="statSentinels">0</strong>
+            <span class="stat-meta" id="statSentinelsMeta">of 0 deployed</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Type C predictions</span>
+            <strong class="stat-value" id="statTypeC">0</strong>
+            <span class="stat-meta">testable claims</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Pending validation</span>
+            <strong class="stat-value" id="statPending">0</strong>
+            <span class="stat-meta">awaiting Kaalam</span>
+          </article>
+        </div>
+        <div class="overview-grid">
+          <div class="panel">
+            <div class="panel-head"><h2>Field map</h2></div>
+            <div id="mapOverview" class="map-box"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Sentinel health</h2></div>
+            <div id="sentinelMini" class="sentinel-mini"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Recent syncs</h2></div>
+          <div id="recentCorpus" class="recent-list"></div>
+        </div>
+        <div class="overview-types" id="overviewTypes"></div>
+      </section>
+
+      <!-- SYSTEM: 3 categories + pipeline + live dataset -->
+      <section class="view" id="view-system">
+        <div class="problem-banner">
+          <img src="assets/logo-leaf.png" alt="" width="32" height="32" />
+          <div>
+            <h2>Traditional Ecological Knowledge Validation Engine</h2>
+            <p id="problemText"></p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Collection pipeline</h2><span class="muted">Live · phone → hub → command</span></div>
+          <div class="pipeline-flow" id="pipelineFlow"></div>
+        </div>
+
+        <div class="system-grid">
+          <div class="panel">
+            <div class="panel-head"><h2>Three knowledge types</h2></div>
+            <div class="type-cards" id="typeCards"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>How data is collected</h2></div>
+            <div class="collect-layout">
+              <img src="assets/saakshi-phone.png" alt="Saakshi TEACH screen" class="phone-img" />
+              <ul class="collect-list" id="collectList"></ul>
+            </div>
+            <div class="places-row">
+              <img src="assets/sentinel.png" alt="" class="places-icon" width="40" height="40" />
+              <p><b>Phones for people · Sentinels for places.</b> Field app captures elder voice; Kaavu boxes monitor the grove 24/7.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Live dataset store</h2><span class="muted" id="datasetMeta">Growing corpus</span></div>
+          <div class="dataset-viz">
+            <div class="dataset-bars" id="datasetBars"></div>
+            <div class="dataset-consent" id="datasetConsent"></div>
+          </div>
+          <div class="dataset-live" id="datasetLive"></div>
+        </div>
+      </section>
+
+      <!-- CORPUS -->
+      <section class="view" id="view-corpus">
+        <div class="panel fill">
+          <div class="panel-head">
+            <h2>Knowledge store</h2>
+            <span class="muted" id="corpusFilterMeta">All entries</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="corpusTable">
+              <thead>
+                <tr>
+                  <th>Elder</th>
+                  <th>Tribe</th>
+                  <th>Type</th>
+                  <th>Location</th>
+                  <th>Consent</th>
+                  <th>Status</th>
+                  <th>Synced</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="corpusBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- DATASET -->
+      <section class="view" id="view-dataset">
+        <div class="stats-grid dataset-stats" id="datasetStats"></div>
+        <div class="panel">
+          <div class="panel-head bar">
+            <h2>Tribe distribution</h2>
+            <button type="button" class="btn" id="exportCsvBtn">↓ Export CSV</button>
+          </div>
+          <div class="dataset-viz single">
+            <div class="dataset-bars" id="tribeBars"></div>
+          </div>
+        </div>
+        <div class="panel fill">
+          <div class="panel-head"><h2>Structured field dataset</h2><span class="muted">Live from Arivu Hub</span></div>
+          <div class="table-wrap">
+            <table class="data-table dataset-table" id="datasetTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Elder</th>
+                  <th>Tribe</th>
+                  <th>Village</th>
+                  <th>District</th>
+                  <th>Type</th>
+                  <th>Species</th>
+                  <th>Consent</th>
+                  <th>Validation</th>
+                  <th>Geohash</th>
+                  <th>Lat</th>
+                  <th>Lng</th>
+                  <th>Synced</th>
+                </tr>
+              </thead>
+              <tbody id="datasetBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SENTINELS -->
+      <section class="view" id="view-sentinels">
+        <div class="panel-head bar">
+          <h2>Kaavu sentinel boxes</h2>
+          <button type="button" class="btn primary" id="addSentinelBtn">+ Register box</button>
+        </div>
+        <div class="sentinel-grid" id="sentinelGrid"></div>
+      </section>
+
+      <!-- FEEDS -->
+      <section class="view" id="view-feeds">
+        <div class="feeds-grid" id="feedsGrid">
+          <p class="empty">Loading external sources…</p>
+        </div>
+      </section>
+
+      <!-- MAP -->
+      <section class="view" id="view-map">
+        <div class="panel fill">
+          <div class="panel-head">
+            <h2>Operations map</h2>
+            <div class="map-toolbar">
+              <div class="map-toggle">
+                <button type="button" class="map-mode active" data-mode="2d">2D</button>
+                <button type="button" class="map-mode" data-mode="3d">3D terrain</button>
+              </div>
+              <div class="legend">
+                <span><i class="leg open"></i> OPEN</span>
+                <span><i class="leg community"></i> COMMUNITY</span>
+                <span><i class="leg embargoed"></i> EMBARGOED</span>
+                <span><i class="leg sentinel"></i> SENTINEL</span>
+                <span class="muted" style="margin-left:8px">3D pillars = tribe colour</span>
+              </div>
+            </div>
+          </div>
+          <div id="mapFull" class="map-box tall map-2d"></div>
+          <div class="map-3d-wrap map-box tall" id="map3dWrap" hidden>
+            <canvas id="map3d" class="map-3d"></canvas>
+            <span class="map-hint">Drag to rotate · scroll to zoom</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACTIVITY -->
+      <section class="view" id="view-activity">
+        <div class="panel fill">
+          <div class="panel-head"><h2>System log</h2></div>
+          <ul class="activity-log" id="activityLog"></ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <dialog id="entryModal" class="modal wide">
+    <div class="modal-head">
+      <h2>Manage entry</h2>
+      <button type="button" class="icon-btn" id="closeModal">✕</button>
+    </div>
+    <form class="modal-body" id="entryForm">
+      <div id="entryReadonly" class="readonly-block"></div>
+      <div class="form-grid">
+        <label>Validation status
+          <select name="validation_status" id="entryValidation">
+            <option value="PENDING">PENDING</option>
+            <option value="VALIDATED">VALIDATED</option>
+            <option value="BROKEN">BROKEN</option>
+            <option value="WEAKENING">WEAKENING</option>
+            <option value="INCONCLUSIVE">INCONCLUSIVE</option>
+            <option value="NOT_TESTABLE">NOT_TESTABLE</option>
+          </select>
+        </label>
+        <label>Assigned to
+          <input type="text" name="assigned_to" id="entryAssigned" placeholder="Reviewer / BMC officer" />
+        </label>
+        <label>Consent
+          <select name="consent_level" id="entryConsent">
+            <option value="OPEN">OPEN</option>
+            <option value="COMMUNITY_ONLY">COMMUNITY_ONLY</option>
+            <option value="EMBARGOED">EMBARGOED</option>
+          </select>
+        </label>
+        <label class="span2">Review notes
+          <textarea name="review_notes" id="entryNotes" rows="3" placeholder="Internal notes for this record…"></textarea>
+        </label>
+      </div>
+    </form>
+    <div class="modal-foot">
+      <button type="button" class="btn danger" id="deleteEntryBtn">Delete</button>
+      <button type="button" class="btn" id="closeModal2">Cancel</button>
+      <button type="button" class="btn primary" id="saveEntryBtn">Save changes</button>
+    </div>
+  </dialog>
+
+  <dialog id="sentinelModal" class="modal wide">
+    <div class="modal-head">
+      <h2 id="sentinelModalTitle">Manage sentinel</h2>
+      <button type="button" class="icon-btn" id="closeSentinelModal">✕</button>
+    </div>
+    <form class="modal-body form-grid" id="sentinelForm">
+      <input type="hidden" name="id" id="sentinelId" />
+      <label>Box name <input type="text" name="name" required /></label>
+      <label>Location <input type="text" name="location" /></label>
+      <label>Status
+        <select name="status">
+          <option value="online">online</option>
+          <option value="offline">offline</option>
+          <option value="simulated">simulated</option>
+        </select>
+      </label>
+      <label>Maintenance
+        <select name="maintenance_status">
+          <option value="operational">operational</option>
+          <option value="needs_visit">needs_visit</option>
+          <option value="decommissioned">decommissioned</option>
+        </select>
+      </label>
+      <label>In-charge name <input type="text" name="incharge_name" /></label>
+      <label>Role <input type="text" name="incharge_role" placeholder="BMC Field Officer" /></label>
+      <label>Phone <input type="tel" name="incharge_phone" /></label>
+      <label>Organisation <input type="text" name="incharge_organisation" /></label>
+      <label>Linked elder <input type="text" name="linked_elder" /></label>
+      <label>Linked prediction <input type="text" name="linked_prediction" /></label>
+      <label>Installed <input type="date" name="installed_date" /></label>
+      <label class="span2">Notes <textarea name="notes" rows="2"></textarea></label>
+    </form>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="closeSentinelModal2">Cancel</button>
+      <button type="button" class="btn primary" id="saveSentinelBtn">Save box</button>
+    </div>
+  </dialog>
+
+  <!-- Command Board AI assistant -->
+  <button type="button" class="assist-fab" id="assistFab" aria-label="Open assistant" aria-expanded="false">◈</button>
+  <div class="assist-panel" id="assistPanel">
+    <div class="assist-head">
+      <div>
+        <strong>Command Assistant</strong>
+        <span>Navigate &amp; explain the board</span>
+      </div>
+      <button type="button" class="icon-btn" id="assistClose" aria-label="Close">✕</button>
+    </div>
+    <div class="assist-log" id="assistLog"></div>
+    <div class="assist-chips" id="assistChips"></div>
+    <form class="assist-form" id="assistForm">
+      <input type="text" id="assistInput" placeholder="Ask about stats, tabs, how-to…" autocomplete="off" />
+      <button type="submit" class="btn primary">Send</button>
+    </form>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/hub-client.js"></script>
+  <script src="js/sentinels.js"></script>
+  <script src="js/map3d.js"></script>
+  <script src="js/command.js"></script>
+  <script src="js/assistant.js"></script>
+</body>
+</html>
