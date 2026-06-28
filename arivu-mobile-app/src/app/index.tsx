@@ -20,21 +20,6 @@ function PlayIcon() {
   );
 }
 
-function CheckIcon() {
-  return (
-    <Svg width={18} height={18} viewBox="0 0 18 18">
-      <Path
-        d="M3 9 L7 13 L15 5"
-        stroke={Colors.headerDark}
-        strokeWidth={2.5}
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
 function ValidateIcon() {
   // Small line-chart glyph for the validation engine.
   return (
@@ -118,14 +103,6 @@ export default function HomeScreen() {
             subtitle="test predictions (Kaalam)"
             onPress={() => router.push('/validate')}
             accentColor={Colors.headerDark}
-          />
-          <ActionCard
-            backgroundColor={Colors.reviewRed}
-            icon={<CheckIcon />}
-            label="REVIEW"
-            subtitle="verify mappings"
-            onPress={() => router.push('/review')}
-            accentColor={Colors.reviewRed}
           />
         </View>
 

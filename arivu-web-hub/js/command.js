@@ -16,19 +16,16 @@
 
   let mapOverview = null;
   let mapFull = null;
-  let mapMode = "2d";
   let corpusMarkers = [];
+  let groveMarkers = [];
   let pollTimer = null;
 
   const VIEW_META = {
     overview: { title: "Overview", subtitle: "Western Ghats field operations" },
-    system: { title: "System", subtitle: "Three knowledge types · collection pipeline · live store" },
-    dataset: { title: "Dataset", subtitle: "Structured TEK records by tribe · exportable" },
-    corpus: { title: "Corpus", subtitle: "Knowledge store from Saakshi app" },
-    sentinels: { title: "Sentinels", subtitle: "Kaavu box health, incharge, and telemetry" },
-    feeds: { title: "Live feeds", subtitle: "Open-Meteo weather + GBIF species data" },
+    corpus: { title: "Knowledge", subtitle: "Elder corpus from Saakshi · structured & exportable" },
+    sentinels: { title: "Sentinels", subtitle: "Kaavu box health, telemetry & live feeds" },
+    areas: { title: "Areas", subtitle: "Corpus & sentinels grouped by grove / region" },
     map: { title: "Map", subtitle: "Corpus entries and sentinel positions" },
-    activity: { title: "Activity", subtitle: "System events" },
   };
 
   function esc(s) {
@@ -170,7 +167,7 @@
       state.hubOnline = false;
       $("hubPill").className = "hub-pill offline";
       $("hubPill").innerHTML = '<span class="dot"></span> Hub offline';
-      $("lastSync").textContent = "Run: node server/hub.mjs";
+      $("lastSync").textContent = "Hub offline — restart the hub server";
       log("Hub unreachable — " + (e.message || e));
     }
     renderAll();
@@ -198,15 +195,143 @@
     renderMaps();
     renderNavBadges();
     renderOverviewTypes();
-    renderSystem();
+    renderAreas();
     renderDataset();
-    if (document.querySelector("#view-feeds.active")) renderFeeds();
+    if (document.querySelector("#view-sentinels.active")) renderFeeds();
   }
 
   function renderNavBadges() {
     $("navCorpusCount").textContent = state.corpus.length;
     const online = state.sentinels.filter((s) => s.status === "online").length;
     $("navSentinelCount").textContent = online + "/" + state.sentinels.length;
+  }
+
+  // ---- areas (grove / region grouping) ----
+  const AREA_RULES = [
+    { name: "Wayanad", re: /wayanad|pulpalli|meppadi|kalpetta|cheenkanni|kurichiya|paniya|kuruma|mananthavady|sultan/i },
+    { name: "BR Hills", re: /br\s*hills|biligiri|chamarajanagar|yelandur|soliga|k\.?\s*gudi/i },
+    { name: "Nilgiris", re: /nilgiri|gudalur|ooty|toda|kota/i },
+    { name: "Idukki", re: /idukki|munnar|muthuvan|high\s*range|shola/i },
+    { name: "Silent Valley", re: /silent\s*valley|cholanaikkan|attappadi|palakkad/i },
+  ];
+
+  function areaOf(rec) {
+    const hay = [rec.location, rec.district, rec.village, rec.location_name, rec.tribe, rec.name]
+      .filter(Boolean).join(" ");
+    for (const r of AREA_RULES) if (r.re.test(hay)) return r.name;
+    return (rec.location || rec.district || rec.village || "Other").trim() || "Other";
+  }
+
+  function groupAreas() {
+    const map = new Map();
+    const ensure = (name) => {
+      if (!map.has(name)) map.set(name, { name, sentinels: [], corpus: [] });
+      return map.get(name);
+    };
+    state.sentinels.forEach((s) => ensure(areaOf(s)).sentinels.push(s));
+    state.corpus.forEach((e) => ensure(areaOf(e)).corpus.push(e));
+    const areas = [...map.values()].map((a) => {
+      const online = a.sentinels.filter((s) => s.status === "online").length;
+      const healths = a.sentinels.map(sentinelHealth);
+      const health = healths.length ? Math.round(healths.reduce((x, y) => x + y, 0) / healths.length) : null;
+      const alerts = a.sentinels.filter(
+        (s) => s.status === "offline" || sentinelHealth(s) < 40 || (s.telemetry && s.telemetry.smoke)
+      ).length;
+      return Object.assign(a, { online, health, alerts });
+    });
+    areas.sort((a, b) => (b.sentinels.length + b.corpus.length) - (a.sentinels.length + a.corpus.length));
+    return areas;
+  }
+
+  function selectArea(name) {
+    state.selectedArea = state.selectedArea === name ? null : name;
+    renderAreas();
+  }
+
+  function renderAreas() {
+    const grid = $("areasGrid");
+    if (!grid) return;
+    const areas = groupAreas();
+    if ($("navAreaCount")) $("navAreaCount").textContent = areas.length;
+    if (!areas.length) { grid.innerHTML = '<p class="empty">No data yet — sync from the Saakshi app.</p>'; return; }
+
+    grid.innerHTML = areas.map((a) => {
+      const hCls = a.health == null ? "" : healthClass(a.health);
+      const alertChip = a.alerts
+        ? '<span class="area-alert warn">⚠ ' + a.alerts + " alert" + (a.alerts > 1 ? "s" : "") + "</span>"
+        : '<span class="area-alert ok">✓ clear</span>';
+      const healthRow = a.health == null
+        ? '<div class="area-health none">No sentinel yet</div>'
+        : '<div class="area-health"><div class="bar-track"><div class="bar-fill ' + hCls +
+          '" style="width:' + a.health + '%"></div></div><span>' + a.health + "%</span></div>";
+      return (
+        '<button type="button" class="area-card' + (state.selectedArea === a.name ? " active" : "") +
+          '" data-area="' + esc(a.name) + '">' +
+          '<div class="area-card-head"><h3>' + esc(a.name) + "</h3>" + alertChip + "</div>" +
+          '<div class="area-stats">' +
+            "<div><b>" + a.sentinels.length + "</b><small>" + a.online + " online</small></div>" +
+            "<div><b>" + a.corpus.length + "</b><small>entries</small></div>" +
+          "</div>" +
+          healthRow +
+        "</button>"
+      );
+    }).join("");
+
+    grid.querySelectorAll("[data-area]").forEach((btn) => {
+      btn.addEventListener("click", () => selectArea(btn.dataset.area));
+    });
+    renderAreaDetail();
+  }
+
+  function renderAreaDetail() {
+    const el = $("areaDetail");
+    if (!el) return;
+    const area = state.selectedArea ? groupAreas().find((a) => a.name === state.selectedArea) : null;
+    if (!area) { el.hidden = true; el.innerHTML = ""; return; }
+    el.hidden = false;
+
+    const boxes = area.sentinels.length
+      ? area.sentinels.map((s) => {
+          const t = s.telemetry || {};
+          const st = s.status || "offline";
+          const tele = [
+            t.temp_c != null ? t.temp_c + "°C" : null,
+            t.humidity_pct != null ? t.humidity_pct + "% RH" : null,
+            "Health " + sentinelHealth(s) + "%",
+          ].filter(Boolean).join(" · ");
+          return '<div class="area-box"><div class="ab-head"><b>' + esc(s.name) +
+            '</b><span class="status-chip ' + esc(st) + '">' + esc(st) + "</span></div>" +
+            '<span class="muted">' + esc(s.id) + " · " + esc(s.location || "") + "</span>" +
+            '<div class="ab-tele">' + esc(tele) + "</div></div>";
+        }).join("")
+      : '<p class="muted">No sentinels deployed in this area yet.</p>';
+
+    const entries = area.corpus.length
+      ? area.corpus.map((e) =>
+          '<button type="button" class="area-entry" data-entry="' + esc(e.id) + '">' +
+            "<b>" + esc(e.elder_name || "Elder") + '</b> <span class="pill ' + consentClass(e.consent_level) +
+            '">' + esc(consentLabel(e.consent_level)) + "</span>" +
+            '<span class="muted">' + esc(e.tribe || "") + " · " + esc(typeLabel(e.knowledge_type)) + "</span>" +
+            '<span class="ae-txt">' + esc((e.transcript || "").slice(0, 90)) + "</span>" +
+          "</button>"
+        ).join("")
+      : '<p class="muted">No corpus entries from this area yet.</p>';
+
+    el.innerHTML =
+      '<div class="area-detail-head"><h2>' + esc(area.name) + "</h2>" +
+        '<button type="button" class="btn" id="areaClose">✕ Close</button></div>' +
+      '<div class="area-detail-grid">' +
+        '<div class="panel"><div class="panel-head"><h3>Sentinels (' + area.sentinels.length +
+          ')</h3></div><div class="area-box-list">' + boxes + "</div></div>" +
+        '<div class="panel"><div class="panel-head"><h3>Corpus (' + area.corpus.length +
+          ')</h3></div><div class="area-entry-list">' + entries + "</div></div>" +
+      "</div>";
+
+    const close = $("areaClose");
+    if (close) close.addEventListener("click", () => selectArea(state.selectedArea));
+    el.querySelectorAll("[data-entry]").forEach((b) =>
+      b.addEventListener("click", () => openEntry(b.dataset.entry))
+    );
   }
 
   function renderStats() {
@@ -249,7 +374,7 @@
       const val = e.validation_status || "PENDING";
       const rec = e.sentinel_recommendation?.status;
       const valCls = val === "VALIDATED" ? "ok" : val === "BROKEN" ? "warn" : "";
-      const recHint = rec && rec !== val ? " <span class='mono muted'>◈" + esc(rec) + "</span>" : "";
+      const recHint = rec && rec !== val ? " <span class='mono muted'>· " + esc(rec) + "</span>" : "";
       const tribe = e.tribe || "—";
       return (
         "<tr>" +
@@ -311,7 +436,7 @@
             '<div><b>' + (t.humidity_pct != null ? t.humidity_pct + "%" : "—") + '</b><small>Humidity</small></div>' +
             '<div><b>' + (t.rain_mm_24h != null ? t.rain_mm_24h + " mm" : "—") + '</b><small>Rain 24h</small></div>' +
             '<div><b>' + (t.bioacoustic_events_24h != null ? t.bioacoustic_events_24h : "—") + '</b><small>Bio events</small></div>' +
-            '<div><b class="' + battClass(t.battery_pct) + '">' + (t.battery_pct != null ? t.battery_pct + "%" : "—") + (t.solar_charging ? " ☀" : "") + '</b><small>Battery</small></div>' +
+            '<div><b class="' + battClass(t.battery_pct) + '">' + (t.battery_pct != null ? t.battery_pct + "%" : "—") + (t.solar_charging ? ' <span class="solar-ico">' + (window.ArivuIcons ? ArivuIcons.svg("sun") : "") + "</span>" : "") + '</b><small>Battery</small></div>' +
             '<div><b>' + (t.cuckoo_call_detected ? '<span style="color:var(--gold)">DETECTED</span>' : "—") + '</b><small>Cuckoo call</small></div>' +
           '</div>' +
           '<div class="sc-actions">' +
@@ -328,8 +453,9 @@
     grid.querySelectorAll("[data-feeds-sentinel]").forEach((btn) => {
       btn.addEventListener("click", () => {
         state.selectedSentinelId = btn.dataset.feedsSentinel;
-        setView("feeds");
         loadFeedsForSentinel(btn.dataset.feedsSentinel);
+        const fg = $("feedsGrid");
+        if (fg) fg.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
   }
@@ -386,131 +512,6 @@
         '</div>'
       );
     }).join("");
-  }
-
-  function renderSystem() {
-    const types = (CFG && CFG.knowledgeTypes) || {};
-    const pipeline = (CFG && CFG.pipeline) || [];
-    const counts = countByType();
-    const total = state.corpus.length || 1;
-
-    if ($("problemText")) {
-      $("problemText").textContent = (CFG && CFG.problemStatement) || "";
-    }
-
-    const flow = $("pipelineFlow");
-    if (flow) {
-      flow.innerHTML = pipeline.map((step, i) => {
-        const arrow = i < pipeline.length - 1 ? '<span class="pipe-arrow">→</span>' : "";
-        return (
-          (i ? arrow : "") +
-          '<div class="pipe-step">' +
-            '<img src="' + esc(step.icon) + '" alt="" width="32" height="32" />' +
-            '<h3>' + esc(step.label) + ' <span class="pipe-script">' + esc(step.script) + '</span></h3>' +
-            '<span class="pipe-role">' + esc(step.role) + '</span>' +
-            '<p>' + esc(step.desc) + '</p>' +
-          '</div>'
-        );
-      }).join("");
-    }
-
-    const cards = $("typeCards");
-    if (cards) {
-      cards.innerHTML = ["A", "B", "C"].map((k) => {
-        const t = types[k];
-        if (!t) return "";
-        return (
-          '<article class="type-card" style="border-left-color:' + t.color + '">' +
-            '<div class="type-count">' + counts[k] + '</div>' +
-            '<div>' +
-              '<h4>' + esc(t.label) + ' · ' + esc(t.title) + '</h4>' +
-              '<p>' + esc(t.desc) + '</p>' +
-              '<ul>' + (t.stored || []).map((s) => "<li>" + esc(s) + "</li>").join("") + '</ul>' +
-            '</div>' +
-          '</article>'
-        );
-      }).join("");
-    }
-
-    const collect = $("collectList");
-    if (collect) {
-      collect.innerHTML =
-        "<li><b>TEACH</b> — facilitator records elder in local dialect (Expo Go app)</li>" +
-        "<li><b>GPS</b> — grove location captured as lat/lng + geohash</li>" +
-        "<li><b>Consent</b> — OPEN / COMMUNITY / EMBARGOED chosen per entry</li>" +
-        "<li><b>Sync</b> — POST to Arivu Hub → appears here within 15s</li>" +
-        "<li><b>Structure</b> — Padhavi sorts into Type A, B, or C automatically</li>" +
-        "<li><b>Validate</b> — Type C sent to Kaalam + sentinel + GBIF/IMD feeds</li>";
-    }
-
-    const bars = $("datasetBars");
-    if (bars) {
-      bars.innerHTML = "<p class='muted' style='font-size:11px;margin:0 0 10px'>Entries by knowledge type</p>" +
-        ["A", "B", "C"].map((k) => {
-          const t = types[k] || { label: k, color: "var(--green)" };
-          const pct = Math.round((counts[k] / total) * 100);
-          return (
-            '<div class="bar-group">' +
-              '<label><span>' + esc(t.label) + " · " + esc(t.title || "") + '</span><span>' + counts[k] + '</span></label>' +
-              '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + t.color + '"></div></div>' +
-            '</div>'
-          );
-        }).join("");
-    }
-
-    const consentEl = $("datasetConsent");
-    if (consentEl) {
-      const consent = { OPEN: 0, COMMUNITY_ONLY: 0, EMBARGOED: 0 };
-      state.corpus.forEach((e) => {
-        const c = e.consent_level || "OPEN";
-        consent[c] = (consent[c] || 0) + 1;
-      });
-      const colors = { OPEN: "#1b6b47", COMMUNITY_ONLY: "#e0a92e", EMBARGOED: "#f07167" };
-      consentEl.innerHTML = "<p class='muted' style='font-size:11px;margin:0 0 10px'>Consent distribution</p>" +
-        Object.entries(consent).map(([k, n]) => {
-          const pct = Math.round((n / total) * 100);
-          const label = k === "COMMUNITY_ONLY" ? "COMMUNITY" : k;
-          return (
-            '<div class="bar-group">' +
-              '<label><span>' + esc(label) + '</span><span>' + n + '</span></label>' +
-              '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + (colors[k] || "#666") + '"></div></div>' +
-            '</div>'
-          );
-        }).join("");
-    }
-
-    if ($("datasetMeta")) {
-      $("datasetMeta").textContent = state.corpus.length + " entries · updated " + ($("lastSync") && $("lastSync").textContent.replace("Synced ", "") || "—");
-    }
-
-    const live = $("datasetLive");
-    if (live) {
-      const groups = { A: [], B: [], C: [] };
-      state.corpus.forEach((e) => {
-        const k = typeKey(e.knowledge_type);
-        if (k && groups[k].length < 3) groups[k].push(e);
-      });
-      let html = "";
-      ["A", "B", "C"].forEach((k) => {
-        const t = types[k];
-        const entries = groups[k];
-        html += '<div class="live-type-group">' +
-          '<div class="live-type-head">' + esc(t ? t.label + " · " + t.title : "Type " + k) +
-          ' <span>' + counts[k] + ' stored</span></div>';
-        if (!entries.length) {
-          html += '<p class="muted" style="font-size:12px">No ' + k + ' entries yet — teach from the app.</p>';
-        } else {
-          entries.forEach((e) => {
-            html += '<div class="live-entry">' +
-              '<b>' + esc(e.elder_name || "Unknown") + ' · ' + esc(e.village || "") + '</b>' +
-              '<span class="muted">' + esc((e.transcript || "").slice(0, 100)) + (e.transcript && e.transcript.length > 100 ? "…" : "") + '</span>' +
-            '</div>';
-          });
-        }
-        html += '</div>';
-      });
-      live.innerHTML = html || '<p class="empty">Dataset empty — save from Saakshi TEACH</p>';
-    }
   }
 
   function renderActivity() {
@@ -796,40 +797,45 @@
     log("Exported CSV · " + rows.length + " rows");
   }
 
-  function setMapMode(mode) {
-    mapMode = mode;
-    const map2d = $("mapFull");
-    const map3dWrap = $("map3dWrap");
-    const map3dEl = $("map3d");
-    document.querySelectorAll(".map-mode").forEach((b) => {
-      b.classList.toggle("active", b.dataset.mode === mode);
-    });
-    if (mode === "3d") {
-      map2d.hidden = true;
-      if (map3dWrap) map3dWrap.hidden = false;
-      if (!window.ArivuMap3D) {
-        alert("3D map unavailable — Three.js failed to load. Check your connection and refresh.");
-        return;
-      }
-      requestAnimationFrame(() => {
-        ArivuMap3D.show(map3dEl);
-      });
-    } else {
-      map2d.hidden = false;
-      if (map3dWrap) map3dWrap.hidden = true;
-      setTimeout(() => mapFull && mapFull.invalidateSize(), 100);
-    }
+  // ---- maps ----
+  // Keep the map pinned to one copy of the world, focused on India / the
+  // Western Ghats — no zooming out to a repeating whole-earth view.
+  let tileLayers = [];
+
+  function currentTheme() {
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
   }
 
-  // ---- maps ----
+  function tileUrl() {
+    return currentTheme() === "light"
+      ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  }
+
+  function swapMapTiles() {
+    tileLayers.forEach((t) => t.setUrl(tileUrl()));
+  }
+
   function initMap(elId) {
-    const mcfg = (CFG && CFG.map) || {};
     const center = (CFG && CFG.region && CFG.region.center) || [11.6854, 76.132];
-    const map = L.map(elId, { zoomControl: true }).setView(center, mcfg.defaultZoom || 9);
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      { attribution: "© OpenStreetMap · © CARTO", maxZoom: 18 }
-    ).addTo(map);
+    // India bounding box (with a little margin) — pan/zoom is clamped to this.
+    const indiaBounds = L.latLngBounds([6.0, 67.0], [37.5, 98.5]);
+    const map = L.map(elId, {
+      zoomControl: true,
+      minZoom: 5,
+      maxZoom: 18,
+      maxBounds: indiaBounds,
+      maxBoundsViscosity: 1.0,
+      worldCopyJump: false,
+    }).setView(center, 9);
+    const layer = L.tileLayer(tileUrl(), {
+      attribution: "© OpenStreetMap · © CARTO",
+      maxZoom: 18,
+      minZoom: 5,
+      noWrap: true,
+      bounds: indiaBounds,
+    }).addTo(map);
+    tileLayers.push(layer);
     return map;
   }
 
@@ -868,25 +874,110 @@
   }
 
   function renderMaps() {
-    if (!mapOverview) mapOverview = initMap("mapOverview");
-    if (!mapFull) mapFull = initMap("mapFull");
+    if (!mapOverview) { mapOverview = initMap("mapOverview"); addGroveMarker(mapOverview); }
 
     renderCorpusOnMap(mapOverview, corpusMarkers);
+    if (window.ArivuSentinels) ArivuSentinels.render(mapOverview, state.sentinels);
+    setTimeout(() => { mapOverview.invalidateSize(); }, 100);
 
-    if (window.ArivuSentinels) {
-      ArivuSentinels.render(mapOverview, state.sentinels);
-      ArivuSentinels.render(mapFull, state.sentinels);
-    }
+    // Map view uses the bespoke illustrated Western Ghats map (no tiles).
+    renderGhatsMap();
+  }
 
-    const fullMarkers = [];
-    renderCorpusOnMap(mapFull, fullMarkers);
+  function renderGhatsMap() {
+    if (!window.ArivuGhatsMap || !$("mapFull")) return;
+    ArivuGhatsMap.render($("mapFull"), {
+      corpus: state.corpus,
+      sentinels: state.sentinels,
+      onRegionClick: (name) => { setView("areas"); selectArea(name); },
+    });
+  }
 
-    setTimeout(() => { mapOverview.invalidateSize(); mapFull.invalidateSize(); }, 100);
+  // ---- live grove sentinel (real LoRa data via /api/sentinel/data) ----
+  const GROVE = { id: "grove_1", name: "Kaavu Sentinel 01", place: "Meppadi, Wayanad", lat: 11.6854, lng: 76.1320 };
 
-    if (mapMode === "3d" && window.ArivuMap3D && $("map3d") && $("map3dWrap") && !$("map3dWrap").hidden) {
-      ArivuMap3D.update(state.corpus, state.sentinels);
-      ArivuMap3D.resize($("map3d"));
-    }
+  function grovePopupHtml(temp) {
+    return "<b>" + GROVE.name + "</b><br>" + GROVE.place + "<br>" +
+      'Status: <span style="color:#1b6b47">● Online</span><br>' +
+      'Last reading: <span id="grove1-temp">' + (temp || "--") + "</span>°C";
+  }
+
+  function addGroveMarker(map) {
+    if (!window.L) return;
+    const m = L.marker([GROVE.lat, GROVE.lng]).addTo(map);
+    m.bindPopup(grovePopupHtml("--"));
+    groveMarkers.push(m);
+  }
+
+  async function updateLiveSentinel() {
+    if (!window.ArivuHub) return;
+    try {
+      const res = await fetch(ArivuHub.baseUrl() + "/api/sentinel/data");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data) || !data.length) return;
+      const latest = data[0];
+      const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+      const setHtml = (id, v) => { const el = $(id); if (el) el.innerHTML = v; };
+      const ic = (n) => (window.ArivuIcons ? ArivuIcons.svg(n) : "");
+      if (latest.temperature != null) set("s1-temp", latest.temperature + "°C");
+      if (latest.humidity != null) set("s1-humid", latest.humidity + "%");
+      // Gas / fire (MQ sensor). smoke=true once gas crosses the fire threshold.
+      if (latest.smoke) setHtml("s1-smoke", '<span class="reading-alert">' + ic("flame") + " FIRE</span>");
+      else if (latest.gas != null) set("s1-smoke", "gas " + latest.gas);
+      else set("s1-smoke", "Clear");
+      // Vibration edges/sec (SW-420 tamper sensor).
+      if (latest.vibration_rate != null) {
+        const v = Number(latest.vibration_rate);
+        setHtml("s1-vib", v > 0
+          ? '<span class="reading-alert">' + ic("activity") + " " + v + "/s</span>"
+          : "0/s");
+      } else if (latest.sound_alert) {
+        set("s1-vib", String(latest.sound_alert));
+      } else {
+        set("s1-vib", "None");
+      }
+      set("grove1-temp", latest.temperature != null ? latest.temperature : "--");
+      // AI sound classification
+      if (latest.sound_alert) {
+        const pretty = String(latest.sound_alert).replace(/_/g, " ");
+        const pct = latest.sound_conf != null ? " " + Math.round(latest.sound_conf * 100) + "%" : "";
+        setHtml("s1-sound", '<span class="reading-alert">' + ic("activity") + " " + pretty + pct + "</span>");
+      } else {
+        set("s1-sound", "background");
+      }
+      groveMarkers.forEach((m) => m.setPopupContent(grovePopupHtml(latest.temperature)));
+    } catch { /* gateway not connected yet — leave placeholders */ }
+  }
+
+  async function updateAlerts() {
+    if (!window.ArivuHub) return;
+    try {
+      const res = await fetch(ArivuHub.baseUrl() + "/api/alerts");
+      if (!res.ok) return;
+      const alerts = await res.json();
+      const list = $("alert-list");
+      if (!list) return;
+      if (!Array.isArray(alerts) || !alerts.length) {
+        list.innerHTML = '<p class="empty">No alerts yet</p>';
+        if ($("alertMeta")) $("alertMeta").textContent = "0 alerts";
+        return;
+      }
+      if ($("alertMeta")) $("alertMeta").textContent = alerts.length + " alert" + (alerts.length === 1 ? "" : "s");
+      list.innerHTML = alerts.map((a) => {
+        const iconName = a.type === "smoke" || a.type === "fire" ? "flame"
+          : a.type === "tamper" ? "alert"
+          : a.type === "sound" ? "activity"
+          : "thermometer";
+        const icon = window.ArivuIcons ? ArivuIcons.svg(iconName) : "";
+        const t = a.timestamp ? new Date(a.timestamp).toLocaleTimeString("en-IN", { hour12: false }) : "";
+        return '<div class="alert-item ' + esc(a.type || "") + '">' +
+          '<span class="alert-icon">' + icon + "</span>" +
+          '<span class="alert-time">' + esc(t) + "</span>" +
+          '<span class="alert-msg">' + esc(a.message || "") + "</span>" +
+        "</div>";
+      }).join("");
+    } catch { /* hub offline — keep last feed */ }
   }
 
   // ---- navigation ----
@@ -897,34 +988,112 @@
     document.querySelectorAll(".view").forEach((v) => {
       v.classList.toggle("active", v.id === "view-" + name);
     });
+    state.currentView = name;
     const meta = VIEW_META[name] || VIEW_META.overview;
-    $("viewTitle").textContent = meta.title;
-    $("viewSubtitle").textContent = meta.subtitle;
+    const titleKeys = { overview: "nav.overview", corpus: "nav.knowledge", sentinels: "nav.sentinels", areas: "nav.areas", map: "nav.map" };
+    const subKeys = { overview: "sub.overview", corpus: "sub.knowledge", sentinels: "sub.sentinels", areas: "sub.areas", map: "sub.map" };
+    $("viewTitle").textContent = window.ArivuI18n && titleKeys[name] ? ArivuI18n.t(titleKeys[name]) : meta.title;
+    $("viewSubtitle").textContent = window.ArivuI18n && subKeys[name] ? ArivuI18n.t(subKeys[name]) : meta.subtitle;
     $("searchWrap").hidden = name !== "corpus";
     if (name === "map") {
-      setTimeout(() => {
-        if (mapMode === "3d" && window.ArivuMap3D && $("map3d")) {
-          ArivuMap3D.show($("map3d"));
-        } else if (mapFull) mapFull.invalidateSize();
-      }, 200);
+      renderGhatsMap();
     }
-    if (name === "feeds") loadAllFeeds();
+    if (name === "sentinels") loadAllFeeds();
     if (window.ArivuAssistant) ArivuAssistant.setCurrentView(name);
   }
 
   window.ArivuCommand = {
     setView,
     getState: () => ({ ...state }),
+    // Called by ArivuI18n after a language change — refresh JS-set strings.
+    onLangChange: () => {
+      applyTheme(currentTheme());          // re-label the theme button
+      setView(state.currentView || "overview"); // re-translate title/subtitle
+    },
   };
 
+  function applyTheme(theme) {
+    const t = theme === "light" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem("arivu-theme", t); } catch (_) {}
+    const btn = $("themeToggle");
+    if (btn) {
+      const ic = window.ArivuIcons ? ArivuIcons.svg(t === "light" ? "moon" : "sun") : "";
+      const tr = window.ArivuI18n ? ArivuI18n.t(t === "light" ? "theme.dark" : "theme.light") : (t === "light" ? "Dark" : "Light");
+      btn.innerHTML = ic + ' <span class="btn-label">' + tr + "</span>";
+      btn.setAttribute("aria-label", t === "light" ? "Switch to dark mode" : "Switch to light mode");
+    }
+    swapMapTiles();
+  }
+
   function init() {
+    let savedTheme = "dark";
+    try { savedTheme = localStorage.getItem("arivu-theme") || "dark"; } catch (_) {}
+    applyTheme(savedTheme);
+    const themeBtn = $("themeToggle");
+    if (themeBtn) {
+      themeBtn.addEventListener("click", () => {
+        applyTheme(currentTheme() === "light" ? "dark" : "light");
+      });
+    }
+
+    // Language selector + initial localisation
+    if (window.ArivuI18n) {
+      const sel = $("langSelect");
+      if (sel) {
+        sel.innerHTML = ArivuI18n.LANGS
+          .map((l) => '<option value="' + l.code + '">' + l.label + "</option>")
+          .join("");
+        sel.value = ArivuI18n.getLang();
+        sel.addEventListener("change", () => ArivuI18n.setLang(sel.value));
+      }
+      ArivuI18n.apply();
+      setView("overview"); // localise the initial title/subtitle
+    }
+
+    // Inject line icons into nav items + top-bar buttons (no emoji).
+    if (window.ArivuIcons) {
+      document.querySelectorAll(".nav-btn[data-icon]").forEach((btn) => {
+        btn.insertAdjacentHTML("afterbegin", ArivuIcons.svg(btn.dataset.icon, "nav-ico"));
+      });
+      const btnIcon = (id, name) => {
+        const el = $(id);
+        if (el) el.insertAdjacentHTML("afterbegin", ArivuIcons.svg(name) + " ");
+      };
+      btnIcon("refreshBtn", "refresh");
+      btnIcon("exportCsvBtn", "download");
+      btnIcon("activityToggle", "bell");
+      btnIcon("addSentinelBtn", "radio");
+      const fab = $("assistFab");
+      if (fab) fab.innerHTML = ArivuIcons.svg("leaf", "fab-ico");
+    }
+
     document.querySelectorAll(".nav-btn").forEach((btn) => {
       btn.addEventListener("click", () => setView(btn.dataset.view));
     });
 
+    // Activity slide-over
+    const openActivity = () => {
+      renderActivity();
+      $("activityDrawer").hidden = false;
+      $("activityScrim").hidden = false;
+      requestAnimationFrame(() => {
+        $("activityDrawer").classList.add("open");
+        $("activityScrim").classList.add("open");
+      });
+    };
+    const closeActivity = () => {
+      $("activityDrawer").classList.remove("open");
+      $("activityScrim").classList.remove("open");
+      setTimeout(() => { $("activityDrawer").hidden = true; $("activityScrim").hidden = true; }, 250);
+    };
+    $("activityToggle").addEventListener("click", openActivity);
+    $("activityClose").addEventListener("click", closeActivity);
+    $("activityScrim").addEventListener("click", closeActivity);
+
     $("refreshBtn").addEventListener("click", async () => {
       await refresh();
-      if (document.querySelector("#view-feeds.active")) loadAllFeeds();
+      if (document.querySelector("#view-sentinels.active")) loadAllFeeds();
     });
     $("corpusSearch").addEventListener("input", (e) => {
       state.search = e.target.value;
@@ -941,13 +1110,16 @@
     $("closeSentinelModal2").addEventListener("click", () => $("sentinelModal").close());
     $("saveSentinelBtn").addEventListener("click", saveSentinel);
 
-    document.querySelectorAll(".map-mode").forEach((btn) => {
-      btn.addEventListener("click", () => setMapMode(btn.dataset.mode));
-    });
     $("exportCsvBtn").addEventListener("click", exportCsv);
 
     log("Arivu Command initialized");
     refresh();
+
+    // Live grove sensor + alert feeds (real data from ESP32 LoRa gateway → hub).
+    updateLiveSentinel();
+    updateAlerts();
+    setInterval(updateLiveSentinel, 5000);
+    setInterval(updateAlerts, 3000);
 
     const pollMs = (CFG && CFG.hub && CFG.hub.pollIntervalMs) || 15000;
     pollTimer = setInterval(refresh, pollMs);

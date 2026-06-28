@@ -12,7 +12,7 @@ const DEMOS = [
     id: 'demo_cuckoo_monsoon',
     transcript:
       'When the Indian Cuckoo (kuyil) calls before dawn, the monsoon arrives in seven to ten days.',
-    elder_name: 'Elder (WYD_042)',
+    elder_name: 'Rajan',
     tribe: 'Paniya',
     village: 'Wayanad',
     district: 'Wayanad',
@@ -27,7 +27,7 @@ const DEMOS = [
       trigger_time: 'pre_dawn',
       outcome_event: 'monsoon_onset',
       time_window_days: [7, 10],
-      first_observed: '~1962',
+      first_observed: '1962',
     },
   },
   {

@@ -5,8 +5,10 @@ ecological knowledge. It is made of two parts that work side by side:
 
 ```
 .
-├── arivu-mobile-app/   # Expo (React Native) field app — TEACH / ASK / VALIDATE / REVIEW
-└── arivu-web-hub/      # Web dashboard + Node "Hub" server the app syncs to
+├── arivu-mobile-app/              # Expo field app — TEACH / ASK / VALIDATE
+├── arivu-web-hub/                 # Command dashboard + Hub API + ESP32 gateway
+├── champ-project-1_inferencing/     # Edge Impulse model (Arduino library)
+└── Makefile                       # make — start hub + dashboard + app together
 ```
 
 ## arivu-mobile-app
@@ -41,3 +43,15 @@ node server/hub.mjs
 The mobile app syncs recorded knowledge entries to the Hub server in
 `arivu-web-hub/`, and pulls the merged corpus back for ASK/VALIDATE. Point the
 app's `EXPO_PUBLIC_HUB_URL` at the running Hub.
+
+## Kaavu Sentinel (ESP32 hardware)
+
+Firmware and wiring docs live in `arivu-web-hub/hardware/`. Flash the sentinel
+with `kaavu_sentinel/kaavu_sentinel.ino` and the `champ-project-1_inferencing`
+library. Bridge USB serial to the dashboard with:
+
+```bash
+cd arivu-web-hub && node gateway.js
+```
+
+Run everything at once from the repo root: `make`

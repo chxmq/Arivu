@@ -39,6 +39,14 @@ export function resolveVisibility(
           'Stored encrypted; multi-key release only.',
       };
     default:
-      return { showContent: true, locked: false, reason: '' };
+      // Fail closed: an unrecognised or missing consent label is never treated
+      // as public. Protection is the default, disclosure is the exception.
+      return {
+        showContent: false,
+        locked: true,
+        reason:
+          'Consent level not set on this record. Withheld until a BMC member ' +
+          'assigns an explicit consent label.',
+      };
   }
 }

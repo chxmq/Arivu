@@ -1,0 +1,16 @@
+{
+  "name": "arivu-web-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Arivu Hub API server + Command dashboard + ESP32 LoRa gateway",
+  "scripts": {
+    "hub": "node server/hub.mjs",
+    "serve": "npx serve . -l 8765",
+    "gateway": "node gateway.js",
+    "seed": "node scripts/seed-demos.mjs"
+  },
+  "dependencies": {
+    "serialport": "^12.0.0",
+    "@serialport/parser-readline": "^12.0.0"
+  }
+}

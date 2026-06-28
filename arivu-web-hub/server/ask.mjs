@@ -98,16 +98,16 @@ function scoreEntry(query, entry) {
 
 function canView(entry, role) {
   if (entry.consent_level === "OPEN") return true;
-  if (entry.consent_level === "COMMUNITY_ONLY") return role === "BMC" || role === "ZSI";
-  return false;
+  if (entry.consent_level === "EMBARGOED") return false;
+  // COMMUNITY_ONLY and any unrecognised/missing label are community-tier:
+  // never public, only the originating community's BMC (and ZSI) may view.
+  return role === "BMC" || role === "ZSI";
 }
 
-function composeAnswer(query, matches, usedLlm) {
+function composeAnswer(query, matches) {
   if (!matches.length) {
     return {
-      answer:
-        "No elder in the corpus has taught us about that yet. Arivu only answers from " +
-        "recorded elder knowledge — it does not invent folklore or science.",
+      answer: "No elder recording found for this query.",
       confidence: 0,
       method: "retrieval",
     };
@@ -117,10 +117,6 @@ function composeAnswer(query, matches, usedLlm) {
   const extra = matches.length > 1
     ? `\n\n${matches.length - 1} other related recording(s) may also help — see below.`
     : "";
-
-  if (usedLlm) {
-    return { answer: usedLlm, confidence: top.score, method: "llm+retrieval" };
-  }
 
   const typeNote =
     top.knowledge_type === "C" || top.knowledge_type === "TYPE_C_PREDICTION"
@@ -136,55 +132,6 @@ function composeAnswer(query, matches, usedLlm) {
     confidence: top.score,
     method: "retrieval",
   };
-}
-
-async function llmSynthesize(query, matches) {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key || !matches.length) return null;
-
-  const context = matches
-    .slice(0, 3)
-    .map(
-      (e, i) =>
-        `[${i + 1}] Elder ${e.elder_name} (${e.tribe}, ${e.village}): "${e.transcript}"` +
-        (e.species_mentioned ? ` Species: ${e.species_mentioned}.` : "")
-    )
-    .join("\n");
-
-  const body = {
-    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-    temperature: 0.2,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are Saakshi ASK for Arivu — a Traditional Ecological Knowledge assistant. " +
-          "Answer ONLY using the elder recordings provided. Never invent species, rituals, or predictions. " +
-          "If the context is insufficient, say no elder has taught that yet. " +
-          "Cite the elder by name. Keep answers under 120 words, warm and clear.",
-      },
-      {
-        role: "user",
-        content: `Question: ${query}\n\nElder recordings:\n${context}`,
-      },
-    ],
-  };
-
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch {
-    return null;
-  }
 }
 
 export async function askCorpus(corpus, question, viewerRole = "OUTSIDER") {
@@ -206,14 +153,8 @@ export async function askCorpus(corpus, question, viewerRole = "OUTSIDER") {
     .sort((a, b) => b.score - a.score);
 
   const matches = scored.map((x) => x.entry);
-  const topScore = scored[0]?.score || 0;
 
-  let llmAnswer = null;
-  if (topScore >= 2 && process.env.OPENAI_API_KEY) {
-    llmAnswer = await llmSynthesize(q, matches);
-  }
-
-  const { answer, confidence, method } = composeAnswer(q, matches, llmAnswer);
+  const { answer, confidence, method } = composeAnswer(q, matches);
 
   return {
     answer,

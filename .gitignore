@@ -22,5 +22,9 @@ node_modules/
 dist/
 build/
 
+# ── Local-only / large artifacts ───────────────────────────────
+Transfer/
+.claude/
+
 # NOTE: each sub-project (arivu-mobile-app, arivu-web-hub) also
 # has its own .gitignore with tooling-specific rules.

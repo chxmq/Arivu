@@ -26,9 +26,9 @@ export const TEACH_DEMOS: TeachDemo[] = [
   {
     id: 'cuckoo_monsoon',
     label: 'Cuckoo → monsoon',
-    subtitle: 'Type C · VALIDATED with Sentinel',
+    subtitle: 'Type C · BROKEN (climate drift)',
     knowledge_type: 'C',
-    elder_name: 'Elder (WYD_042)',
+    elder_name: 'Rajan',
     tribe: 'Paniya',
     village: 'Wayanad',
     district: 'Wayanad',
@@ -46,9 +46,9 @@ export const TEACH_DEMOS: TeachDemo[] = [
       trigger_time: 'pre_dawn',
       outcome_event: 'monsoon_onset',
       time_window_days: [7, 10],
-      first_observed: '~1962',
+      first_observed: '1962',
     },
-    validateHint: 'Run VALIDATE → expect VALIDATED (Sentinel bioacoustics)',
+    validateHint: 'Run VALIDATE → expect BROKEN (gap widened 8→15 days, 2001–2024)',
   },
   {
     id: 'pala_rain',

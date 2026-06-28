@@ -33,6 +33,7 @@ export type ValidationResult = {
   dataset: string;
   finding: string;
   series: ValidationSeriesPoint[];
+  validated_at?: string;
 };
 
 /** KAALAM assessment draft — sentinel or manual; human confirms final status. */

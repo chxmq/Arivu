@@ -41,9 +41,26 @@ function statusColor(status: ValidationStatus): string {
   }
 }
 
-function PredictionChart({ result }: { result: ValidationResult }) {
+function PredictionChart({
+  result,
+  windowDays,
+}: {
+  result: ValidationResult;
+  windowDays?: [number, number];
+}) {
   const series = result.series;
   if (series.length === 0) return null;
+
+  // Gap = days between trigger (e.g. cuckoo call) and outcome (e.g. monsoon onset).
+  const gaps = series.map((s) => s.outcome_doy - s.trigger_doy);
+  const earlyN = Math.max(1, Math.min(10, Math.floor(series.length / 2)));
+  const recentN = Math.max(1, Math.min(7, series.length - earlyN));
+  const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
+  const earlyAvg = Math.round(avg(gaps.slice(0, earlyN)));
+  const recentAvg = Math.round(avg(gaps.slice(series.length - recentN)));
+  const earlyYears = `${series[0].year}–${series[earlyN - 1].year}`;
+  const recentYears = `${series[series.length - recentN].year}–${series[series.length - 1].year}`;
+  const recentTag = result.status === 'BROKEN' ? 'BREAKING' : result.status;
 
   const W = SCREEN_WIDTH - 72;
   const H = 180;
@@ -115,6 +132,30 @@ function PredictionChart({ result }: { result: ValidationResult }) {
           <Text style={styles.legendText}>Outcome (day-of-year)</Text>
         </View>
       </View>
+
+      <View style={styles.gapPanel}>
+        <Text style={styles.gapTitle}>GAP · trigger → outcome</Text>
+        {windowDays && (
+          <View style={styles.gapRow}>
+            <View style={[styles.gapDot, { backgroundColor: Colors.headerDark }]} />
+            <Text style={styles.gapText}>
+              Elder predicted: {windowDays[0]}–{windowDays[1]} days
+            </Text>
+          </View>
+        )}
+        <View style={styles.gapRow}>
+          <View style={[styles.gapDot, { backgroundColor: Colors.teachGreen }]} />
+          <Text style={styles.gapText}>
+            {earlyYears}: {earlyAvg} days avg ✓
+          </Text>
+        </View>
+        <View style={styles.gapRow}>
+          <View style={[styles.gapDot, { backgroundColor: Colors.reviewRed }]} />
+          <Text style={[styles.gapText, styles.gapBad]}>
+            {recentYears}: {recentAvg} days avg ✗ {recentTag}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -140,11 +181,13 @@ function AssessmentBlock({
   subtitle,
   result,
   accent,
+  windowDays,
 }: {
   title: string;
   subtitle?: string;
   result: ValidationResult;
   accent: string;
+  windowDays?: [number, number];
 }) {
   return (
     <View style={[styles.resultBox, { borderLeftWidth: 4, borderLeftColor: accent }]}>
@@ -153,7 +196,7 @@ function AssessmentBlock({
       <View style={[styles.resultBadge, { backgroundColor: statusColor(result.status) }]}>
         <Text style={styles.resultBadgeText}>{result.status}</Text>
       </View>
-      {result.series.length > 0 && <PredictionChart result={result} />}
+      {result.series.length > 0 && <PredictionChart result={result} windowDays={windowDays} />}
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{result.p_value == null ? '—' : result.p_value}</Text>
@@ -399,6 +442,7 @@ export default function ValidateScreen() {
                   }
                   result={assessmentAsResult(selected.sentinel_recommendation)!}
                   accent={Colors.askGold}
+                  windowDays={selected.prediction?.time_window_days}
                 />
               ) : (
                 <Text style={styles.hintText}>
@@ -422,6 +466,7 @@ export default function ValidateScreen() {
                   subtitle="Run on this phone — independent of sentinel"
                   result={assessmentAsResult(selected.manual_assessment)!}
                   accent={Colors.teachGreen}
+                  windowDays={selected.prediction?.time_window_days}
                 />
               ) : (
                 <Text style={styles.hintText}>
@@ -655,6 +700,26 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
   legendText: { fontSize: 11, color: Colors.grey },
+  gapPanel: {
+    backgroundColor: Colors.background,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 4,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.borderGrey,
+  },
+  gapTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    color: Colors.grey,
+    marginBottom: 8,
+  },
+  gapRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 5 },
+  gapDot: { width: 10, height: 10, borderRadius: 5 },
+  gapText: { fontSize: 13, fontWeight: '700', color: Colors.headerDark },
+  gapBad: { color: Colors.reviewRed },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

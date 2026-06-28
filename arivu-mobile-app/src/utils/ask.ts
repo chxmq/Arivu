@@ -12,30 +12,10 @@ export type AskResult = {
   hubConnected: boolean;
   corpusCount: number;
   message: string;
-  method: 'hub-llm' | 'hub-retrieval' | 'local';
+  method: 'local';
 };
 
 type HubCorpusItem = Record<string, unknown>;
-
-type HubAskSource = {
-  id: string;
-  elder_name?: string;
-  tribe?: string;
-  village?: string;
-  transcript?: string;
-  knowledge_type?: string;
-  consent_level?: string;
-  validation_status?: string;
-  score?: number;
-};
-
-type HubAskResponse = {
-  ok?: boolean;
-  answer?: string;
-  confidence?: number;
-  method?: string;
-  sources?: HubAskSource[];
-};
 
 const GREETING_RE =
   /^(hi|hello|hey|hola|namaste|good\s*(morning|afternoon|evening|night)|thanks?|thank\s*you|ok|okay|bye|sup|yo|help|test)\s*[!?.]*$/i;
@@ -101,7 +81,12 @@ function hubToEntry(raw: HubCorpusItem): KnowledgeEntry {
     geohash: String(raw.geohash || raw.location_geohash || ''),
     latitude: lat,
     longitude: lng,
-    consent_level: consent === 'COMMUNITY_ONLY' || consent === 'EMBARGOED' ? consent : 'OPEN',
+    // Only an explicit 'OPEN' is public. Anything unrecognised falls back to
+    // the locked COMMUNITY_ONLY tier so a missing label can never leak content.
+    consent_level:
+      consent === 'OPEN' || consent === 'COMMUNITY_ONLY' || consent === 'EMBARGOED'
+        ? consent
+        : 'COMMUNITY_ONLY',
     consent_given_by: String(raw.consent_given_by || ''),
     audio_uri: hubAudioUrl(raw),
     audio_duration_seconds: Number(raw.audio_duration_seconds || 0),
@@ -188,46 +173,11 @@ async function fetchHubCorpus(): Promise<KnowledgeEntry[]> {
   }
 }
 
-async function fetchHubAsk(
-  question: string,
-  viewerRole: ViewerRole
-): Promise<HubAskResponse | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
-  try {
-    const res = await fetch(`${HUB_URL}/api/ask`, {
-      method: 'POST',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, viewer_role: viewerRole }),
-      signal: controller.signal,
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as HubAskResponse;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 function localIntro(matches: AskMatch[]): string {
   const top = matches[0].entry;
   return matches.length === 1
     ? `Matched 1 recording from ${top.elder_name} (${top.tribe || 'local elder'}).`
     : `Matched ${matches.length} recordings — best fit from ${top.elder_name} (${top.tribe || 'local elder'}).`;
-}
-
-function mapHubSources(
-  sources: HubAskSource[],
-  corpus: KnowledgeEntry[]
-): AskMatch[] {
-  const byId = new Map(corpus.map((e) => [e.id, e]));
-  return sources
-    .map((s) => {
-      const entry = byId.get(s.id) ?? hubToEntry(s as HubCorpusItem);
-      return { entry, score: Number(s.score || 0) };
-    })
-    .filter((m) => m.entry.transcript);
 }
 
 export async function checkHubOnline(): Promise<boolean> {
@@ -304,8 +254,7 @@ function searchLocal(
     const withheld = corpus.filter(
       (e) => !resolveVisibility(e, viewerRole).showContent && scoreEntry(question, e) > 0
     ).length;
-    let message =
-      'No elder recording in the corpus matches that question. Saakshi never invents an answer.';
+    let message = 'No elder recording found for this query.';
     if (withheld > 0) {
       message += `\n\n${withheld} related recording(s) exist but are withheld for your viewer role.`;
     }
@@ -339,36 +288,7 @@ export async function askCorpus(
 
   const { corpus, hubConnected } = await loadMergedCorpus(localEntries);
 
-  if (hubConnected) {
-    const hub = await fetchHubAsk(q, viewerRole);
-    if (hub) {
-      const matches = mapHubSources(hub.sources || [], corpus);
-      if (matches.length) {
-        const method = hub.method === 'llm+retrieval' ? 'hub-llm' : 'hub-retrieval';
-        const message =
-          method === 'hub-llm' && hub.answer
-            ? hub.answer
-            : localIntro(matches);
-        return {
-          matches,
-          hubConnected: true,
-          corpusCount: corpus.length,
-          message,
-          method,
-        };
-      }
-      if (hub.answer && !(hub.sources || []).length) {
-        return {
-          matches: [],
-          hubConnected: true,
-          corpusCount: corpus.length,
-          message: hub.answer,
-          method: hub.method === 'llm+retrieval' ? 'hub-llm' : 'hub-retrieval',
-        };
-      }
-    }
-  }
-
+  // Pure retrieval — keyword search across phone + hub corpus. Never generates answers.
   const { matches, message } = searchLocal(corpus, q, viewerRole);
   let finalMessage = message;
   if (!matches.length && !hubConnected) {

@@ -123,14 +123,8 @@ export default function AskScreen() {
 
         {result && (
           <View style={styles.resultSection}>
-            {result.method === 'hub-llm' && (
-              <Text style={styles.methodTag}>Grounded in elder corpus · hub AI</Text>
-            )}
-            {result.method === 'hub-retrieval' && (
-              <Text style={styles.methodTag}>Matched from live hub corpus</Text>
-            )}
-            {result.method === 'local' && result.matches.length > 0 && (
-              <Text style={styles.methodTag}>Matched on this device</Text>
+            {result.matches.length > 0 && (
+              <Text style={styles.methodTag}>Matched from elder corpus · verbatim</Text>
             )}
             <Text style={styles.resultIntro}>{result.message}</Text>
 

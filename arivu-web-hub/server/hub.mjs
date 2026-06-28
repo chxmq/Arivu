@@ -549,6 +549,40 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
+    // Live sensor readings pushed from the ESP32 LoRa gateway (gateway.js).
+    if (method === "POST" && url.pathname === "/api/sentinel/data") {
+      const body = await parseBody(req);
+      if (!body) return send(res, 400, { error: "json body required" });
+      const store = readStore();
+      store.sentinelData = store.sentinelData || [];
+      store.sentinelData.unshift({ ...body, received_at: new Date().toISOString() });
+      store.sentinelData = store.sentinelData.slice(0, 100); // keep last 100 readings
+      writeStore(store);
+      return send(res, 200, { ok: true });
+    }
+
+    if (method === "GET" && url.pathname === "/api/sentinel/data") {
+      const store = readStore();
+      return send(res, 200, store.sentinelData || []);
+    }
+
+    // Live alert feed (smoke / sound / temperature) raised by sentinels.
+    if (method === "POST" && url.pathname === "/api/alerts") {
+      const body = await parseBody(req);
+      if (!body) return send(res, 400, { error: "json body required" });
+      const store = readStore();
+      store.alerts = store.alerts || [];
+      store.alerts.unshift({ ...body, timestamp: body.timestamp || new Date().toISOString() });
+      store.alerts = store.alerts.slice(0, 50);
+      writeStore(store);
+      return send(res, 200, { ok: true });
+    }
+
+    if (method === "GET" && url.pathname === "/api/alerts") {
+      const store = readStore();
+      return send(res, 200, store.alerts || []);
+    }
+
     if (method === "GET" && url.pathname === "/api/dashboard") {
       let store = readStore();
       store = simulateTelemetry(store);
@@ -587,5 +621,9 @@ server.listen(PORT, HOST, () => {
   console.log("  GET  /api/corpus/:id/audio — stream recording for website + ASK");
   console.log("  POST /api/validate/manual  — store manual KAALAM assessment");
   console.log("  POST /api/validate/confirm — human confirms (sentinel / manual / custom)");
-  console.log("  POST /api/ask        — corpus-grounded Q&A (set OPENAI_API_KEY for AI)");
+  console.log("  POST /api/ask        — corpus-grounded Q&A (retrieval only)");
+  console.log("  POST /api/sentinel/data — live readings from ESP32 LoRa gateway");
+  console.log("  GET  /api/sentinel/data — latest sentinel readings");
+  console.log("  POST /api/alerts     — raise a live alert (smoke / sound / temp)");
+  console.log("  GET  /api/alerts     — live alert feed");
 });

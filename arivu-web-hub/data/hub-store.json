@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-06-14T11:58:24.583Z",
+  "updated_at": "2026-06-28T21:31:18.126Z",
   "corpus": [
     {
       "id": "demo_cuckoo_monsoon",
@@ -27,7 +27,144 @@
       },
       "source": "demo-seed",
       "received_at": "2026-06-14T04:06:38.269Z",
-      "validation_status": "PENDING"
+      "validation_status": "PENDING",
+      "sentinel_recommendation": {
+        "status": "BROKEN",
+        "p_value": 0.0001,
+        "correlation": 0.979,
+        "mean_lag_days": 10.2,
+        "n_years": 24,
+        "method": "Pearson r + Welch t-test (KAALAM sentinel assessment)",
+        "dataset": "eBird Indian Cuckoo first call (Wayanad) × IMD Kerala monsoon onset (2001-2024)",
+        "finding": "Outcome timing shifted between early and recent years (Welch p < 0.001). A prediction held in living memory no longer matches the data. Stream: Cheenkanni Kaavu (Kaavu Sentinel). Awaiting human confirmation.",
+        "series": [
+          {
+            "year": 2001,
+            "trigger_doy": 144,
+            "outcome_doy": 152
+          },
+          {
+            "year": 2002,
+            "trigger_doy": 145,
+            "outcome_doy": 155
+          },
+          {
+            "year": 2003,
+            "trigger_doy": 143,
+            "outcome_doy": 150
+          },
+          {
+            "year": 2004,
+            "trigger_doy": 146,
+            "outcome_doy": 153
+          },
+          {
+            "year": 2005,
+            "trigger_doy": 144,
+            "outcome_doy": 151
+          },
+          {
+            "year": 2006,
+            "trigger_doy": 145,
+            "outcome_doy": 154
+          },
+          {
+            "year": 2007,
+            "trigger_doy": 143,
+            "outcome_doy": 149
+          },
+          {
+            "year": 2008,
+            "trigger_doy": 144,
+            "outcome_doy": 152
+          },
+          {
+            "year": 2009,
+            "trigger_doy": 146,
+            "outcome_doy": 156
+          },
+          {
+            "year": 2010,
+            "trigger_doy": 143,
+            "outcome_doy": 150
+          },
+          {
+            "year": 2011,
+            "trigger_doy": 145,
+            "outcome_doy": 153
+          },
+          {
+            "year": 2012,
+            "trigger_doy": 146,
+            "outcome_doy": 157
+          },
+          {
+            "year": 2013,
+            "trigger_doy": 144,
+            "outcome_doy": 151
+          },
+          {
+            "year": 2014,
+            "trigger_doy": 145,
+            "outcome_doy": 155
+          },
+          {
+            "year": 2015,
+            "trigger_doy": 147,
+            "outcome_doy": 158
+          },
+          {
+            "year": 2016,
+            "trigger_doy": 146,
+            "outcome_doy": 156
+          },
+          {
+            "year": 2017,
+            "trigger_doy": 148,
+            "outcome_doy": 160
+          },
+          {
+            "year": 2018,
+            "trigger_doy": 148,
+            "outcome_doy": 163
+          },
+          {
+            "year": 2019,
+            "trigger_doy": 149,
+            "outcome_doy": 161
+          },
+          {
+            "year": 2020,
+            "trigger_doy": 150,
+            "outcome_doy": 164
+          },
+          {
+            "year": 2021,
+            "trigger_doy": 149,
+            "outcome_doy": 162
+          },
+          {
+            "year": 2022,
+            "trigger_doy": 151,
+            "outcome_doy": 165
+          },
+          {
+            "year": 2023,
+            "trigger_doy": 150,
+            "outcome_doy": 163
+          },
+          {
+            "year": 2024,
+            "trigger_doy": 151,
+            "outcome_doy": 166
+          }
+        ],
+        "assessed_at": "2026-06-28T21:31:18.126Z",
+        "sentinel_id": "SNT_WYD_01",
+        "sentinel_name": "Cheenkanni Kaavu",
+        "source": "kaalam+sentinel:SNT_WYD_01"
+      },
+      "linked_sentinel_id": "SNT_WYD_01"
     },
     {
       "id": "demo_pala_rain",
@@ -54,7 +191,74 @@
       },
       "source": "demo-seed",
       "received_at": "2026-06-14T04:06:38.269Z",
-      "validation_status": "PENDING"
+      "validation_status": "PENDING",
+      "sentinel_recommendation": {
+        "status": "BROKEN",
+        "p_value": 0.0001,
+        "correlation": 0.723,
+        "mean_lag_days": 15.1,
+        "n_years": 10,
+        "method": "Pearson r + Welch t-test (KAALAM sentinel assessment)",
+        "dataset": "Kaavu Sentinel phenology cam × IMD first heavy rain (2015-2024)",
+        "finding": "Outcome timing shifted between early and recent years (Welch p < 0.001). A prediction held in living memory no longer matches the data. Stream: Pulpalli Sacred Grove (Kaavu Sentinel). Awaiting human confirmation.",
+        "series": [
+          {
+            "year": 2015,
+            "trigger_doy": 98,
+            "outcome_doy": 116
+          },
+          {
+            "year": 2016,
+            "trigger_doy": 102,
+            "outcome_doy": 120
+          },
+          {
+            "year": 2017,
+            "trigger_doy": 100,
+            "outcome_doy": 118
+          },
+          {
+            "year": 2018,
+            "trigger_doy": 99,
+            "outcome_doy": 117
+          },
+          {
+            "year": 2019,
+            "trigger_doy": 101,
+            "outcome_doy": 119
+          },
+          {
+            "year": 2020,
+            "trigger_doy": 100,
+            "outcome_doy": 112
+          },
+          {
+            "year": 2021,
+            "trigger_doy": 98,
+            "outcome_doy": 110
+          },
+          {
+            "year": 2022,
+            "trigger_doy": 99,
+            "outcome_doy": 111
+          },
+          {
+            "year": 2023,
+            "trigger_doy": 97,
+            "outcome_doy": 109
+          },
+          {
+            "year": 2024,
+            "trigger_doy": 100,
+            "outcome_doy": 113
+          }
+        ],
+        "assessed_at": "2026-06-28T21:31:18.126Z",
+        "sentinel_id": "SNT_WYD_02",
+        "sentinel_name": "Pulpalli Sacred Grove",
+        "source": "kaalam+sentinel:SNT_WYD_02"
+      },
+      "linked_sentinel_id": "SNT_WYD_02"
     },
     {
       "id": "demo_cheevakka_fever",
@@ -104,7 +308,74 @@
         "first_observed": "~1970"
       },
       "validation_status": "PENDING",
-      "created_at": "2026-06-14T04:17:06.819Z"
+      "created_at": "2026-06-14T04:17:06.819Z",
+      "sentinel_recommendation": {
+        "status": "BROKEN",
+        "p_value": 0.0001,
+        "correlation": 0.723,
+        "mean_lag_days": 15.1,
+        "n_years": 10,
+        "method": "Pearson r + Welch t-test (KAALAM sentinel assessment)",
+        "dataset": "Kaavu Sentinel phenology cam × IMD first heavy rain (2015-2024)",
+        "finding": "Outcome timing shifted between early and recent years (Welch p < 0.001). A prediction held in living memory no longer matches the data. Stream: Pulpalli Sacred Grove (Kaavu Sentinel). Awaiting human confirmation.",
+        "series": [
+          {
+            "year": 2015,
+            "trigger_doy": 98,
+            "outcome_doy": 116
+          },
+          {
+            "year": 2016,
+            "trigger_doy": 102,
+            "outcome_doy": 120
+          },
+          {
+            "year": 2017,
+            "trigger_doy": 100,
+            "outcome_doy": 118
+          },
+          {
+            "year": 2018,
+            "trigger_doy": 99,
+            "outcome_doy": 117
+          },
+          {
+            "year": 2019,
+            "trigger_doy": 101,
+            "outcome_doy": 119
+          },
+          {
+            "year": 2020,
+            "trigger_doy": 100,
+            "outcome_doy": 112
+          },
+          {
+            "year": 2021,
+            "trigger_doy": 98,
+            "outcome_doy": 110
+          },
+          {
+            "year": 2022,
+            "trigger_doy": 99,
+            "outcome_doy": 111
+          },
+          {
+            "year": 2023,
+            "trigger_doy": 97,
+            "outcome_doy": 109
+          },
+          {
+            "year": 2024,
+            "trigger_doy": 100,
+            "outcome_doy": 113
+          }
+        ],
+        "assessed_at": "2026-06-28T21:31:18.126Z",
+        "sentinel_id": "SNT_WYD_02",
+        "sentinel_name": "Pulpalli Sacred Grove",
+        "source": "kaalam+sentinel:SNT_WYD_02"
+      },
+      "linked_sentinel_id": "SNT_WYD_02"
     },
     {
       "id": "c51kp4i6jf1781431531224",
@@ -145,7 +416,74 @@
         "first_observed": "~1970"
       },
       "validation_status": "PENDING",
-      "created_at": "2026-06-14T10:05:31.224Z"
+      "created_at": "2026-06-14T10:05:31.224Z",
+      "sentinel_recommendation": {
+        "status": "BROKEN",
+        "p_value": 0.0001,
+        "correlation": 0.723,
+        "mean_lag_days": 15.1,
+        "n_years": 10,
+        "method": "Pearson r + Welch t-test (KAALAM sentinel assessment)",
+        "dataset": "Kaavu Sentinel phenology cam × IMD first heavy rain (2015-2024)",
+        "finding": "Outcome timing shifted between early and recent years (Welch p < 0.001). A prediction held in living memory no longer matches the data. Stream: Pulpalli Sacred Grove (Kaavu Sentinel). Awaiting human confirmation.",
+        "series": [
+          {
+            "year": 2015,
+            "trigger_doy": 98,
+            "outcome_doy": 116
+          },
+          {
+            "year": 2016,
+            "trigger_doy": 102,
+            "outcome_doy": 120
+          },
+          {
+            "year": 2017,
+            "trigger_doy": 100,
+            "outcome_doy": 118
+          },
+          {
+            "year": 2018,
+            "trigger_doy": 99,
+            "outcome_doy": 117
+          },
+          {
+            "year": 2019,
+            "trigger_doy": 101,
+            "outcome_doy": 119
+          },
+          {
+            "year": 2020,
+            "trigger_doy": 100,
+            "outcome_doy": 112
+          },
+          {
+            "year": 2021,
+            "trigger_doy": 98,
+            "outcome_doy": 110
+          },
+          {
+            "year": 2022,
+            "trigger_doy": 99,
+            "outcome_doy": 111
+          },
+          {
+            "year": 2023,
+            "trigger_doy": 97,
+            "outcome_doy": 109
+          },
+          {
+            "year": 2024,
+            "trigger_doy": 100,
+            "outcome_doy": 113
+          }
+        ],
+        "assessed_at": "2026-06-28T21:31:18.126Z",
+        "sentinel_id": "SNT_WYD_02",
+        "sentinel_name": "Pulpalli Sacred Grove",
+        "source": "kaalam+sentinel:SNT_WYD_02"
+      },
+      "linked_sentinel_id": "SNT_WYD_02"
     },
     {
       "id": "32pr8momilx1781431577811",
@@ -186,7 +524,144 @@
         "first_observed": "~1962"
       },
       "validation_status": "PENDING",
-      "created_at": "2026-06-14T10:06:17.811Z"
+      "created_at": "2026-06-14T10:06:17.811Z",
+      "sentinel_recommendation": {
+        "status": "BROKEN",
+        "p_value": 0.0001,
+        "correlation": 0.979,
+        "mean_lag_days": 10.2,
+        "n_years": 24,
+        "method": "Pearson r + Welch t-test (KAALAM sentinel assessment)",
+        "dataset": "eBird Indian Cuckoo first call (Wayanad) × IMD Kerala monsoon onset (2001-2024)",
+        "finding": "Outcome timing shifted between early and recent years (Welch p < 0.001). A prediction held in living memory no longer matches the data. Stream: Cheenkanni Kaavu (Kaavu Sentinel). Awaiting human confirmation.",
+        "series": [
+          {
+            "year": 2001,
+            "trigger_doy": 144,
+            "outcome_doy": 152
+          },
+          {
+            "year": 2002,
+            "trigger_doy": 145,
+            "outcome_doy": 155
+          },
+          {
+            "year": 2003,
+            "trigger_doy": 143,
+            "outcome_doy": 150
+          },
+          {
+            "year": 2004,
+            "trigger_doy": 146,
+            "outcome_doy": 153
+          },
+          {
+            "year": 2005,
+            "trigger_doy": 144,
+            "outcome_doy": 151
+          },
+          {
+            "year": 2006,
+            "trigger_doy": 145,
+            "outcome_doy": 154
+          },
+          {
+            "year": 2007,
+            "trigger_doy": 143,
+            "outcome_doy": 149
+          },
+          {
+            "year": 2008,
+            "trigger_doy": 144,
+            "outcome_doy": 152
+          },
+          {
+            "year": 2009,
+            "trigger_doy": 146,
+            "outcome_doy": 156
+          },
+          {
+            "year": 2010,
+            "trigger_doy": 143,
+            "outcome_doy": 150
+          },
+          {
+            "year": 2011,
+            "trigger_doy": 145,
+            "outcome_doy": 153
+          },
+          {
+            "year": 2012,
+            "trigger_doy": 146,
+            "outcome_doy": 157
+          },
+          {
+            "year": 2013,
+            "trigger_doy": 144,
+            "outcome_doy": 151
+          },
+          {
+            "year": 2014,
+            "trigger_doy": 145,
+            "outcome_doy": 155
+          },
+          {
+            "year": 2015,
+            "trigger_doy": 147,
+            "outcome_doy": 158
+          },
+          {
+            "year": 2016,
+            "trigger_doy": 146,
+            "outcome_doy": 156
+          },
+          {
+            "year": 2017,
+            "trigger_doy": 148,
+            "outcome_doy": 160
+          },
+          {
+            "year": 2018,
+            "trigger_doy": 148,
+            "outcome_doy": 163
+          },
+          {
+            "year": 2019,
+            "trigger_doy": 149,
+            "outcome_doy": 161
+          },
+          {
+            "year": 2020,
+            "trigger_doy": 150,
+            "outcome_doy": 164
+          },
+          {
+            "year": 2021,
+            "trigger_doy": 149,
+            "outcome_doy": 162
+          },
+          {
+            "year": 2022,
+            "trigger_doy": 151,
+            "outcome_doy": 165
+          },
+          {
+            "year": 2023,
+            "trigger_doy": 150,
+            "outcome_doy": 163
+          },
+          {
+            "year": 2024,
+            "trigger_doy": 151,
+            "outcome_doy": 166
+          }
+        ],
+        "assessed_at": "2026-06-28T21:31:18.126Z",
+        "sentinel_id": "SNT_WYD_01",
+        "sentinel_name": "Cheenkanni Kaavu",
+        "source": "kaalam+sentinel:SNT_WYD_01"
+      },
+      "linked_sentinel_id": "SNT_WYD_01"
     },
     {
       "id": "nfn33i2c9yg1781434572693",
@@ -227,48 +702,74 @@
         "first_observed": "~1970"
       },
       "validation_status": "PENDING",
-      "created_at": "2026-06-14T10:56:12.693Z"
-    },
-    {
-      "id": "be5weqottyo1781434585069",
-      "source": "saakshi-app",
-      "received_at": "2026-06-14T10:56:25.139Z",
-      "transcript": "When the Pala tree (Bartaea longifolia) is in full flower, the first heavy rain comes within two to three weeks.",
-      "elder_name": "Elder (WYD_017)",
-      "elder_id": "Elder (WYD_017)",
-      "tribe": "Kuruma",
-      "village": "Pulpalli",
-      "district": "Wayanad",
-      "dialect": "Kuruma dialect",
-      "language": "Kuruma dialect",
-      "corpus_partition": "field",
-      "location_name": "Pulpalli",
-      "location_geohash": "ttrkxhr",
-      "geohash": "ttrkxhr",
-      "latitude": 30.345852376865807,
-      "longitude": 78.01380042470299,
-      "lat": 30.345852376865807,
-      "lng": 78.01380042470299,
-      "knowledge_type": "C",
-      "consent_level": "OPEN",
-      "consent_given_by": "",
-      "species_mentioned": "Bartaea longifolia",
-      "season": "Pre-monsoon",
-      "interpreter_id": "",
-      "audio_duration_seconds": 0,
-      "has_audio": false,
-      "prediction": {
-        "trigger_event": "Pala_tree_full_bloom",
-        "trigger_time": "daytime",
-        "outcome_event": "first_heavy_rain",
-        "time_window_days": [
-          14,
-          21
+      "created_at": "2026-06-14T10:56:12.693Z",
+      "sentinel_recommendation": {
+        "status": "BROKEN",
+        "p_value": 0.0001,
+        "correlation": 0.723,
+        "mean_lag_days": 15.1,
+        "n_years": 10,
+        "method": "Pearson r + Welch t-test (KAALAM sentinel assessment)",
+        "dataset": "Kaavu Sentinel phenology cam × IMD first heavy rain (2015-2024)",
+        "finding": "Outcome timing shifted between early and recent years (Welch p < 0.001). A prediction held in living memory no longer matches the data. Stream: Pulpalli Sacred Grove (Kaavu Sentinel). Awaiting human confirmation.",
+        "series": [
+          {
+            "year": 2015,
+            "trigger_doy": 98,
+            "outcome_doy": 116
+          },
+          {
+            "year": 2016,
+            "trigger_doy": 102,
+            "outcome_doy": 120
+          },
+          {
+            "year": 2017,
+            "trigger_doy": 100,
+            "outcome_doy": 118
+          },
+          {
+            "year": 2018,
+            "trigger_doy": 99,
+            "outcome_doy": 117
+          },
+          {
+            "year": 2019,
+            "trigger_doy": 101,
+            "outcome_doy": 119
+          },
+          {
+            "year": 2020,
+            "trigger_doy": 100,
+            "outcome_doy": 112
+          },
+          {
+            "year": 2021,
+            "trigger_doy": 98,
+            "outcome_doy": 110
+          },
+          {
+            "year": 2022,
+            "trigger_doy": 99,
+            "outcome_doy": 111
+          },
+          {
+            "year": 2023,
+            "trigger_doy": 97,
+            "outcome_doy": 109
+          },
+          {
+            "year": 2024,
+            "trigger_doy": 100,
+            "outcome_doy": 113
+          }
         ],
-        "first_observed": "~1970"
+        "assessed_at": "2026-06-28T21:31:18.126Z",
+        "sentinel_id": "SNT_WYD_02",
+        "sentinel_name": "Pulpalli Sacred Grove",
+        "source": "kaalam+sentinel:SNT_WYD_02"
       },
-      "validation_status": "PENDING",
-      "created_at": "2026-06-14T10:56:25.069Z"
+      "linked_sentinel_id": "SNT_WYD_02"
     }
   ],
   "sentinels": [
@@ -292,15 +793,16 @@
       "linked_prediction": "Indian_Cuckoo_first_call → monsoon_onset",
       "notes": "Primary cuckoo monitoring grove. Solar panel cleaned monthly.",
       "telemetry": {
-        "temp_c": 19.5,
-        "humidity_pct": 45,
+        "temp_c": 19.8,
+        "humidity_pct": 48,
         "pressure_hpa": 1004,
-        "rain_mm_24h": 85.4,
-        "bioacoustic_events_24h": 648,
+        "rain_mm_24h": 207.9,
+        "bioacoustic_events_24h": 1617,
         "cuckoo_call_detected": false,
-        "battery_pct": 10,
+        "battery_pct": 12,
         "solar_charging": true
-      }
+      },
+      "linked_corpus_id": "demo_cuckoo_monsoon"
     },
     {
       "id": "SNT_WYD_02",
@@ -322,15 +824,16 @@
       "linked_prediction": "Cheevakka medicinal use",
       "notes": "",
       "telemetry": {
-        "temp_c": 25.5,
-        "humidity_pct": 95,
+        "temp_c": 29.4,
+        "humidity_pct": 92,
         "pressure_hpa": 1006,
-        "rain_mm_24h": 82.2,
-        "bioacoustic_events_24h": 703,
+        "rain_mm_24h": 215.4,
+        "bioacoustic_events_24h": 1632,
         "cuckoo_call_detected": false,
-        "battery_pct": 12,
+        "battery_pct": 10,
         "solar_charging": true
-      }
+      },
+      "linked_corpus_id": "demo_pala_rain"
     },
     {
       "id": "SNT_BRH_01",
@@ -352,13 +855,13 @@
       "linked_prediction": "Neem grain storage",
       "notes": "Battery trending low — field visit scheduled.",
       "telemetry": {
-        "temp_c": 30.9,
-        "humidity_pct": 47,
+        "temp_c": 37.4,
+        "humidity_pct": 93,
         "pressure_hpa": 1002,
-        "rain_mm_24h": 83.3,
-        "bioacoustic_events_24h": 635,
+        "rain_mm_24h": 210.9,
+        "bioacoustic_events_24h": 1457,
         "cuckoo_call_detected": false,
-        "battery_pct": 13,
+        "battery_pct": 12,
         "solar_charging": true
       }
     },
@@ -382,15 +885,2405 @@
       "linked_prediction": "Pala flowering → rain",
       "notes": "Cuckoo call detected intermittently this week.",
       "telemetry": {
-        "temp_c": 24.8,
-        "humidity_pct": 54,
+        "temp_c": 31,
+        "humidity_pct": 63,
         "pressure_hpa": 1003,
-        "rain_mm_24h": 91.4,
-        "bioacoustic_events_24h": 640,
+        "rain_mm_24h": 210.3,
+        "bioacoustic_events_24h": 1570,
         "cuckoo_call_detected": true,
-        "battery_pct": 10,
+        "battery_pct": 11,
         "solar_charging": true
       }
+    }
+  ],
+  "last_validation_run": "2026-06-28T21:31:18.126Z",
+  "validation_log": [
+    {
+      "time": "2026-06-28T21:31:18.126Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:31:18.126Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:31:18.126Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:31:18.126Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:31:18.126Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:31:18.126Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:30:18.134Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:30:18.134Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:30:18.134Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:30:18.134Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:30:18.134Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:30:18.134Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:29:18.170Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:29:18.170Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:29:18.170Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:29:18.170Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:29:18.170Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:29:18.170Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:28:18.329Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:28:18.329Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:28:18.329Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:28:18.329Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:28:18.329Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:28:18.329Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:27:18.178Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:27:18.178Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:27:18.178Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:27:18.178Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:27:18.178Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:27:18.178Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:26:18.159Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:26:18.159Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:26:18.159Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:26:18.159Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:26:18.159Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:26:18.159Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:25:18.149Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:25:18.149Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:25:18.149Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:25:18.149Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:25:18.149Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:25:18.149Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:24:18.168Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:24:18.168Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:24:18.168Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:24:18.168Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:24:18.168Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:24:18.168Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:23:18.157Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:23:18.157Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:23:18.157Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:23:18.157Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:23:18.157Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:23:18.157Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:22:18.146Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:22:18.146Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:22:18.146Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:22:18.146Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:22:18.146Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:22:18.146Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:21:18.153Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:21:18.153Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:21:18.153Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:21:18.153Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:21:18.153Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:21:18.153Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:20:18.152Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:20:18.152Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:20:18.152Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:20:18.152Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:20:18.152Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:20:18.152Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:19:18.143Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:19:18.143Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:19:18.143Z",
+      "entry_id": "c51kp4i6jf1781431531224",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:19:18.143Z",
+      "entry_id": "x32l79jjfw1781410626819",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:19:18.143Z",
+      "entry_id": "demo_pala_rain",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:19:18.143Z",
+      "entry_id": "demo_cuckoo_monsoon",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:18:18.193Z",
+      "entry_id": "nfn33i2c9yg1781434572693",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_02",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_017) (Pulpalli Sacred Grove) — awaiting human",
+      "reason": "dashboard-refresh"
+    },
+    {
+      "time": "2026-06-28T21:18:18.193Z",
+      "entry_id": "32pr8momilx1781431577811",
+      "recommended_status": "BROKEN",
+      "human_status": "PENDING",
+      "sentinel_id": "SNT_WYD_01",
+      "msg": "Sentinel recommends BROKEN for Elder (WYD_042) (Cheenkanni Kaavu) — awaiting human",
+      "reason": "dashboard-refresh"
+    }
+  ],
+  "sentinelData": [
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 46,
+      "gas": 357,
+      "smoke": false,
+      "vibration_rate": 344,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:55.753Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 47,
+      "gas": 364,
+      "smoke": false,
+      "vibration_rate": 489,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:53.741Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 47,
+      "gas": 419,
+      "smoke": false,
+      "vibration_rate": 73,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:52.744Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 73,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:52.682Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 404,
+      "smoke": false,
+      "vibration_rate": 387,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:50.672Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 411,
+      "smoke": false,
+      "vibration_rate": 431,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:49.666Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 48,
+      "gas": 357,
+      "smoke": false,
+      "vibration_rate": 230,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:48.655Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 48,
+      "gas": 416,
+      "smoke": false,
+      "vibration_rate": 375,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:47.650Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 48,
+      "gas": 463,
+      "smoke": false,
+      "vibration_rate": 32,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:46.643Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 32,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:46.578Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "sound_alert": "human_voice",
+      "sound_conf": 1,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:46.500Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 48,
+      "gas": 448,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:44.484Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 48,
+      "gas": 454,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:43.490Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 48,
+      "gas": 458,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:41.467Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 48,
+      "gas": 464,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:40.470Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 48,
+      "gas": 446,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:38.454Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 48,
+      "gas": 449,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:37.460Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 48,
+      "gas": 468,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:35.442Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 48,
+      "gas": 464,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:34.437Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 47,
+      "gas": 392,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:32.420Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 24.9,
+      "humidity": 47,
+      "gas": 452,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:31.424Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 468,
+      "smoke": false,
+      "vibration_rate": 8,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:30.413Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 470,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:29.411Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "sound_alert": "human_voice",
+      "sound_conf": 1,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:29.331Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 490,
+      "smoke": false,
+      "vibration_rate": 1040,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:28.338Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 1040,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:28.273Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 469,
+      "smoke": false,
+      "vibration_rate": 1064,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:26.259Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 472,
+      "smoke": false,
+      "vibration_rate": 1655,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:25.259Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 496,
+      "smoke": false,
+      "vibration_rate": 1048,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:23.245Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 550,
+      "smoke": false,
+      "vibration_rate": 466,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:22.246Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 466,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:22.185Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 531,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:20.174Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 525,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:19.174Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "sound_alert": "human_voice",
+      "sound_conf": 1,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:19.085Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 528,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:17.082Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 525,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:16.078Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 535,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:15.069Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 511,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:14.068Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "sound_alert": "human_voice",
+      "sound_conf": 1,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:13.989Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 526,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:12.991Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 542,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:10.975Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 511,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:09.977Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "sound_alert": "human_voice",
+      "sound_conf": 1,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:09.896Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 530,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:07.882Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 531,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:06.885Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "sound_alert": "human_voice",
+      "sound_conf": 1,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:05.802Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 543,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:04.794Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 503,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:03.792Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 534,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:02.782Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 547,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:01.782Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "sound_alert": "human_voice",
+      "sound_conf": 1,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:01.716Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 535,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:05:00.710Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 545,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:58.687Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 542,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:57.692Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 533,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:55.672Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 537,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:54.674Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 528,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:52.659Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25,
+      "humidity": 47,
+      "gas": 528,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:51.656Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 529,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:49.646Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 637,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:48.644Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 511,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:46.630Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 511,
+      "smoke": false,
+      "vibration_rate": 389,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:45.630Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 389,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:45.567Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 49,
+      "gas": 436,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:43.559Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 49,
+      "gas": 548,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:42.563Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 432,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:40.538Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 448,
+      "smoke": false,
+      "vibration_rate": 8,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:39.540Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 8,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:39.479Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 550,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:37.466Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 48,
+      "gas": 496,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:36.461Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 47,
+      "gas": 497,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:34.449Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 47,
+      "gas": 483,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:33.449Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 47,
+      "gas": 497,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:31.432Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 47,
+      "gas": 487,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:30.435Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 47,
+      "gas": 493,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:28.416Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.1,
+      "humidity": 47,
+      "gas": 496,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:27.422Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 47,
+      "gas": 473,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:25.401Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 47,
+      "gas": 489,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:24.404Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 496,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:22.388Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 508,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:21.388Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 47,
+      "gas": 501,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:19.372Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 47,
+      "gas": 479,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:18.383Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 496,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:16.356Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 502,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:15.362Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 491,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:13.341Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 496,
+      "smoke": false,
+      "vibration_rate": 388,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:12.349Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 388,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:12.282Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 51,
+      "gas": 496,
+      "smoke": false,
+      "vibration_rate": 93,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:10.270Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 51,
+      "gas": 511,
+      "smoke": false,
+      "vibration_rate": 486,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:09.268Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 52,
+      "gas": 405,
+      "smoke": false,
+      "vibration_rate": 175,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:07.255Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 52,
+      "gas": 533,
+      "smoke": false,
+      "vibration_rate": 373,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:06.255Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 373,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:06.189Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 49,
+      "gas": 545,
+      "smoke": false,
+      "vibration_rate": 112,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:04.178Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 49,
+      "gas": 524,
+      "smoke": false,
+      "vibration_rate": 6,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:03.179Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 534,
+      "smoke": false,
+      "vibration_rate": 728,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:02.175Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 542,
+      "smoke": false,
+      "vibration_rate": 507,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:01.166Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "vibration_rate": 507,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:01.095Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 539,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:04:00.101Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 611,
+      "smoke": false,
+      "vibration_rate": 26,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:03:58.087Z"
+    },
+    {
+      "sentinel_id": "grove_1",
+      "temperature": 25.2,
+      "humidity": 48,
+      "gas": 686,
+      "smoke": false,
+      "vibration_rate": 0,
+      "recording": false,
+      "sd_ok": false,
+      "lora_ok": true,
+      "sound_alert": null,
+      "sound_conf": 0,
+      "link": "usb",
+      "received_at": "2026-06-28T21:03:57.088Z"
+    }
+  ],
+  "alerts": [
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (73/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:52.684Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (32/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:46.582Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:46.502Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:29.333Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (1040/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:28.276Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (466/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:22.188Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:19.092Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:13.994Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:09.898Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:05.804Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:05:01.719Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (389/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:04:45.572Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (8/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:04:39.481Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (388/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:04:12.286Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (373/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:04:06.192Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (507/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:04:01.099Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (214/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:54.001Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 0.95) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:53.920Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:33.738Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (252/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:32.682Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (993/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:20.564Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (93/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:15.474Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:13.388Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (254/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:10.311Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (8/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:02.216Z"
+    },
+    {
+      "type": "sound",
+      "message": "Gunshot detected (conf 0.89) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:03:00.125Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (47/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:02:54.037Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:02:50.942Z"
+    },
+    {
+      "type": "tamper",
+      "message": "Tamper — vibration (108/s) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:02:37.826Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:02:18.652Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:01:26.240Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:01:17.118Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:01:13.026Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:01:08.934Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:01:04.835Z"
+    },
+    {
+      "type": "sound",
+      "message": "Birds detected (conf 0.60) · Kaavu Sentinel 01",
+      "severity": "INFO",
+      "timestamp": "2026-06-28T21:00:43.675Z"
+    },
+    {
+      "type": "sound",
+      "message": "Vehicle engine detected (conf 0.99) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:36.543Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 0.56) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:35.468Z"
+    },
+    {
+      "type": "sound",
+      "message": "Elephant detected (conf 0.74) · Kaavu Sentinel 01",
+      "severity": "INFO",
+      "timestamp": "2026-06-28T21:00:34.387Z"
+    },
+    {
+      "type": "sound",
+      "message": "Vehicle engine detected (conf 0.93) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:33.293Z"
+    },
+    {
+      "type": "sound",
+      "message": "Elephant detected (conf 0.75) · Kaavu Sentinel 01",
+      "severity": "INFO",
+      "timestamp": "2026-06-28T21:00:31.204Z"
+    },
+    {
+      "type": "sound",
+      "message": "Vehicle engine detected (conf 0.91) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:30.112Z"
+    },
+    {
+      "type": "sound",
+      "message": "Leopard detected (conf 0.50) · Kaavu Sentinel 01",
+      "severity": "INFO",
+      "timestamp": "2026-06-28T21:00:28.022Z"
+    },
+    {
+      "type": "sound",
+      "message": "Vehicle engine detected (conf 0.86) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:24.939Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:13.806Z"
+    },
+    {
+      "type": "sound",
+      "message": "Vehicle engine detected (conf 0.98) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:12.721Z"
+    },
+    {
+      "type": "sound",
+      "message": "Vehicle engine detected (conf 0.89) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T21:00:08.626Z"
+    },
+    {
+      "type": "sound",
+      "message": "Frog detected (conf 0.60) · Kaavu Sentinel 01",
+      "severity": "INFO",
+      "timestamp": "2026-06-28T21:00:07.550Z"
+    },
+    {
+      "type": "sound",
+      "message": "Birds detected (conf 0.96) · Kaavu Sentinel 01",
+      "severity": "INFO",
+      "timestamp": "2026-06-28T21:00:05.463Z"
+    },
+    {
+      "type": "sound",
+      "message": "Human voice detected (conf 1.00) · Kaavu Sentinel 01",
+      "severity": "HIGH",
+      "timestamp": "2026-06-28T20:59:54.339Z"
     }
   ]
 }
