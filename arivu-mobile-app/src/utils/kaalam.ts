@@ -205,7 +205,9 @@ export function validatePrediction(prediction: PredictionSchema): ValidationResu
 
   const meanLag = mean(lags);
   const r = pearson(triggerDOY, outcomeDOY);
-  const [lo, hi] = prediction.time_window_days;
+  // Guard against a prediction synced without a window (runtime data is cast, not
+  // type-checked) — destructuring undefined would crash the VALIDATE screen.
+  const [lo, hi] = prediction.time_window_days || [0, 365];
 
   // Welch's t-test for drift: split the record into an early and a recent
   // cohort and test whether the outcome timing has shifted.

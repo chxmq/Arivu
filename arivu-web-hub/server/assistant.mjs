@@ -8,21 +8,15 @@ const SECTIONS = [
     tips: ["Start here for a quick health check", "Recent syncs show latest TEACH uploads from Saakshi"],
   },
   {
-    id: "system",
-    name: "System",
-    desc: "Problem statement, Saakshi → Padhavi → Kaalam pipeline, and the three knowledge types (A identification, B use, C prediction).",
-    tips: ["Type C predictions are testable against climate data", "Pipeline shows phone → hub → command flow"],
-  },
-  {
-    id: "dataset",
-    name: "Dataset",
-    desc: "Structured TEK table with tribe, geohash, species. Tribe distribution chart and CSV export.",
-    tips: ["Use Export CSV for spreadsheets", "Filter by tribe to see community coverage"],
+    id: "serial",
+    name: "Serial",
+    desc: "Live ESP32 USB serial output per sentinel, streamed via the gateway — raw readings, alerts, and heartbeats.",
+    tips: ["Use this to confirm a box is actually streaming", "Check here if live telemetry looks stale"],
   },
   {
     id: "corpus",
-    name: "Corpus",
-    desc: "Knowledge store from the Saakshi app. Search, manage validation status, consent, notes, or delete entries.",
+    name: "Knowledge",
+    desc: "Knowledge store from the Saakshi app. Search, manage validation status, consent, notes, export CSV, or delete entries.",
     tips: ["Click Manage on any row to edit validation", "Search by elder, tribe, or village"],
   },
   {
@@ -32,16 +26,22 @@ const SECTIONS = [
     tips: ["Link each box to a Type C entry synced from Saakshi TEACH", "Use Manage claim to update validation status", "Register box for new field deployments"],
   },
   {
-    id: "map",
-    name: "Map",
-    desc: "Operations map with corpus pins and sentinel positions. Toggle 2D Leaflet or 3D terrain view.",
-    tips: ["3D pillars are coloured by tribe", "Consent colours: green OPEN, gold COMMUNITY, red EMBARGOED"],
+    id: "areas",
+    name: "Areas",
+    desc: "Corpus and sentinels grouped by grove / region, with per-area counts and alerts.",
+    tips: ["Drill into a region to see its entries and boxes", "Alerts flag areas needing attention"],
   },
   {
-    id: "activity",
-    name: "Activity",
-    desc: "System log of syncs, refreshes, and management actions on the command board.",
-    tips: ["Useful for auditing who changed what"],
+    id: "map",
+    name: "Map",
+    desc: "Operations map with corpus pins and sentinel positions across the Western Ghats.",
+    tips: ["Click a region on the map to open its area detail", "Consent colours: green OPEN, gold COMMUNITY, red EMBARGOED"],
+  },
+  {
+    id: "settings",
+    name: "Settings",
+    desc: "Connection, display, and system status — hub/gateway health and live sentinel diagnostics.",
+    tips: ["Check system status if the gateway looks offline", "Switch theme and connection here"],
   },
 ];
 
@@ -79,13 +79,12 @@ function matchSection(query) {
   const q = query.toLowerCase();
   const rules = [
     { view: "overview", words: ["overview", "dashboard", "home", "stats", "summary", "start"] },
-    { view: "system", words: ["system", "pipeline", "type a", "type b", "type c", "knowledge type", "padhavi", "kaalam", "saakshi flow"] },
-    { view: "dataset", words: ["dataset", "export", "csv", "tribe", "table", "structured", "spreadsheet"] },
-    { view: "corpus", words: ["corpus", "entries", "elder", "recordings", "teach", "manage entry", "validation", "consent"] },
-    { view: "sentinels", words: ["sentinel", "kaavu", "box", "battery", "incharge", "maintenance", "telemetry"] },
-    { view: "feeds", words: ["feed", "weather", "gbif", "open-meteo", "meteo", "species data", "live data"] },
-    { view: "map", words: ["map", "3d", "terrain", "location", "pin", "geohash", "where"] },
-    { view: "activity", words: ["activity", "log", "history", "audit", "events"] },
+    { view: "serial", words: ["serial", "usb", "esp32", "gateway", "raw", "monitor", "stream"] },
+    { view: "corpus", words: ["corpus", "knowledge", "entries", "elder", "recordings", "teach", "manage entry", "validation", "consent", "export", "csv", "table", "spreadsheet"] },
+    { view: "sentinels", words: ["sentinel", "kaavu", "box", "battery", "incharge", "maintenance", "telemetry", "feed", "weather", "gbif", "meteo", "live data"] },
+    { view: "areas", words: ["area", "areas", "region", "grove", "tribe", "district", "village", "grouped"] },
+    { view: "map", words: ["map", "terrain", "location", "pin", "geohash", "where"] },
+    { view: "settings", words: ["settings", "system", "status", "connection", "theme", "health", "pipeline", "kaalam"] },
   ];
   for (const r of rules) {
     if (r.words.some((w) => q.includes(w))) return r.view;
@@ -127,13 +126,13 @@ function composeAnswer(query, snapshot, targetView) {
 
   if (q.match(/how do i|how to|where do i|where can i|help me/)) {
     if (q.includes("export") || q.includes("csv")) {
-      lines.push("Go to **Dataset** and click **↓ Export CSV** in the tribe distribution panel.");
+      lines.push("Click **Export CSV** in the top bar to download the corpus as a spreadsheet.");
     } else if (q.includes("register") && q.includes("sentinel")) {
       lines.push("Open **Sentinels** and click **+ Register box** to add a new Kaavu unit.");
     } else if (q.includes("manage") || q.includes("edit") || q.includes("delete")) {
-      lines.push("Open **Corpus**, find the row, and click **Manage** to edit validation, consent, or delete.");
-    } else if (q.includes("3d") || q.includes("terrain")) {
-      lines.push("Open **Map** and toggle **3D terrain** in the toolbar (drag to rotate, scroll to zoom).");
+      lines.push("Open **Knowledge**, find the row, and click **Manage** to edit validation, consent, or delete.");
+    } else if (q.includes("map") || q.includes("terrain")) {
+      lines.push("Open **Map** to see corpus pins and sentinel positions; click a region to open its area detail.");
     } else if (q.includes("refresh") || q.includes("sync")) {
       lines.push("Click **↻ Refresh** in the top bar to pull the latest hub data.");
     }
@@ -245,9 +244,9 @@ export async function assistCommandBoard(store, message, clientContext = {}) {
     action: wantsNav && navigate ? { type: "navigate", view: navigate } : null,
     suggestions: [
       "Show overview stats",
-      "Open map in 3D",
+      "Open the map",
       "How many pending validation?",
-      "Explain the pipeline",
+      "What is Type C?",
     ],
   };
 }

@@ -114,6 +114,12 @@ export default function HomeScreen() {
           />
         </View>
 
+        <Pressable style={styles.secondaryBtn} onPress={() => router.push('/review')}>
+          <Text style={styles.secondaryText}>
+            ✓ Review pending mappings
+          </Text>
+        </Pressable>
+
         <Pressable style={styles.resetBtn} onPress={handleResetLocal} disabled={resetting}>
           <Text style={styles.resetText}>
             {resetting ? 'Clearing…' : '↻ Clear local TEACH data (fresh start)'}
@@ -161,9 +167,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 16,
   },
-  resetBtn: {
+  secondaryBtn: {
     marginHorizontal: 24,
     marginTop: 20,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.borderGrey,
+    backgroundColor: Colors.textOnDark,
+  },
+  secondaryText: {
+    fontSize: 12,
+    color: Colors.headerDark,
+    fontWeight: '600',
+  },
+  resetBtn: {
+    marginHorizontal: 24,
+    marginTop: 12,
     paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 8,

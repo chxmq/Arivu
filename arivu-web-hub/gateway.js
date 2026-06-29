@@ -27,6 +27,7 @@ const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
 const HUB = process.env.ARIVU_HUB_URL || "http://localhost:8787";
+const HUB_TOKEN = process.env.ARIVU_HUB_TOKEN || ""; // must match the hub when write-protection is on
 const BAUD = Number(process.env.ARIVU_SERIAL_BAUD || 115200);
 const SENTINEL_ID = process.env.ARIVU_SENTINEL_ID || "grove_1";
 const SENTINEL_NAME = process.env.ARIVU_SENTINEL_NAME || "Kaavu Sentinel 01";
@@ -44,7 +45,10 @@ async function post(path, payload) {
   try {
     const res = await fetch(HUB + path, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(HUB_TOKEN ? { Authorization: `Bearer ${HUB_TOKEN}` } : {}),
+      },
       body: JSON.stringify(payload),
     });
     if (!res.ok) console.warn("  POST", path, "->", res.status);
@@ -93,7 +97,10 @@ function severityFor(label) {
 
 // Sentinel direct status line.
 function handleStatusLine(line) {
-  const gas = numAfter(line, /gas\s+(-?\d+)/);
+  // Firmware prints "gas -1" when the MQ sensor is unavailable/self-test failed.
+  // Treat any negative reading as "no data" so the dashboard shows Clear, not "gas -1".
+  const rawGas = numAfter(line, /gas\s+(-?\d+)/);
+  const gas = rawGas != null && rawGas >= 0 ? rawGas : null;
   const vib = numAfter(line, /vib\s+(\d+)\/s/);
   const climate = line.match(/(-?[\d.]+)\s*C\s+(-?[\d.]+)\s*%RH/);
   const temperature = climate ? Number(climate[1]) : null;

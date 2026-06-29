@@ -61,6 +61,17 @@ function PredictionChart({
   const earlyYears = `${series[0].year}–${series[earlyN - 1].year}`;
   const recentYears = `${series[series.length - recentN].year}–${series[series.length - 1].year}`;
   const recentTag = result.status === 'BROKEN' ? 'BREAKING' : result.status;
+  // The recent-cohort row must reflect the actual verdict, not always show a red
+  // ✗ — otherwise a VALIDATED prediction renders a red "✗ VALIDATED" that
+  // contradicts the badge above it.
+  const recentDrifting = result.status === 'BROKEN' || result.status === 'WEAKENING';
+  const recentInconclusive = result.status === 'INCONCLUSIVE';
+  const recentColor = recentDrifting
+    ? Colors.reviewRed
+    : recentInconclusive
+      ? Colors.grey
+      : Colors.teachGreen;
+  const recentMark = recentDrifting ? '✗' : recentInconclusive ? '·' : '✓';
 
   const W = SCREEN_WIDTH - 72;
   const H = 180;
@@ -150,9 +161,9 @@ function PredictionChart({
           </Text>
         </View>
         <View style={styles.gapRow}>
-          <View style={[styles.gapDot, { backgroundColor: Colors.reviewRed }]} />
-          <Text style={[styles.gapText, styles.gapBad]}>
-            {recentYears}: {recentAvg} days avg ✗ {recentTag}
+          <View style={[styles.gapDot, { backgroundColor: recentColor }]} />
+          <Text style={[styles.gapText, recentDrifting && styles.gapBad]}>
+            {recentYears}: {recentAvg} days avg {recentMark} {recentTag}
           </Text>
         </View>
       </View>

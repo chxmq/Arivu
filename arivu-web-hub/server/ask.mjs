@@ -97,11 +97,19 @@ function scoreEntry(query, entry) {
 }
 
 function canView(entry, role) {
-  if (entry.consent_level === "OPEN") return true;
-  if (entry.consent_level === "EMBARGOED") return false;
-  // COMMUNITY_ONLY and any unrecognised/missing label are community-tier:
-  // never public, only the originating community's BMC (and ZSI) may view.
-  return role === "BMC" || role === "ZSI";
+  switch (entry.consent_level) {
+    case "OPEN":
+      return true;
+    case "COMMUNITY_ONLY":
+      // Community-tier: never public, only the originating community's BMC (and ZSI).
+      return role === "BMC" || role === "ZSI";
+    case "EMBARGOED":
+      return false;
+    default:
+      // Fail closed: an unrecognised or missing label is never served to anyone
+      // until a BMC assigns an explicit consent level.
+      return false;
+  }
 }
 
 function composeAnswer(query, matches) {

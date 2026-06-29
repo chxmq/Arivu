@@ -116,6 +116,35 @@ function persistWithValidation(store, pipeOptions = {}) {
   return pipe;
 }
 
+// Optional write protection. When ARIVU_HUB_TOKEN is set, mutating requests
+// (POST/PATCH/PUT/DELETE) must present it via `Authorization: Bearer <token>`
+// or an `X-Arivu-Token` header. Unset = open demo mode (unchanged behaviour).
+const WRITE_TOKEN = process.env.ARIVU_HUB_TOKEN || "";
+const MUTATING = new Set(["POST", "PATCH", "PUT", "DELETE"]);
+function authorized(req) {
+  if (!WRITE_TOKEN) return true;
+  const auth = req.headers["authorization"] || "";
+  const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const xToken = req.headers["x-arivu-token"] || "";
+  return bearer === WRITE_TOKEN || xToken === WRITE_TOKEN;
+}
+
+// Fields the server owns — never accept them from a client on corpus writes,
+// otherwise a caller could forge validated/confirmed provenance. The validation
+// pipeline (re)computes these server-side immediately after the write.
+const SERVER_MANAGED_CORPUS_FIELDS = new Set([
+  "validation_status", "validation_result", "validated_at", "validation_source",
+  "validation_confirmed_by", "validation_confirmed_at", "validation_confirmed_source",
+  "sentinel_recommendation", "manual_assessment", "updated_at",
+]);
+function stripServerFields(body) {
+  const clean = {};
+  for (const [k, v] of Object.entries(body || {})) {
+    if (!SERVER_MANAGED_CORPUS_FIELDS.has(k)) clean[k] = v;
+  }
+  return clean;
+}
+
 /** Merge a live ESP32/gateway reading into the matching sentinel record. */
 function syncLiveSentinelReading(store, reading) {
   const sid = reading.sentinel_id || "grove_1";
@@ -281,12 +310,22 @@ function parseBody(req, maxBytes = 20 * 1024 * 1024) {
 function sendAudio(res, filePath, mime) {
   cors(res);
   const stat = fs.statSync(filePath);
+  const stream = fs.createReadStream(filePath);
+  // A read error mid-stream (file deleted/locked, disk error) fires on a later
+  // tick — without this listener it would surface as an uncaught error and leave
+  // the response hanging.
+  stream.on("error", (err) => {
+    console.error("[hub] audio stream error:", err.message);
+    if (!res.headersSent) send(res, 500, { error: "audio read failed" });
+    else res.destroy();
+  });
+  res.on("close", () => stream.destroy());
   res.writeHead(200, {
     "Content-Type": mime || "audio/mp4",
     "Content-Length": stat.size,
     "Accept-Ranges": "bytes",
   });
-  fs.createReadStream(filePath).pipe(res);
+  stream.pipe(res);
 }
 
 function fetchJson(url) {
@@ -310,6 +349,10 @@ const server = http.createServer(async (req, res) => {
     cors(res);
     res.writeHead(204);
     return res.end();
+  }
+
+  if (MUTATING.has(method) && !authorized(req)) {
+    return send(res, 401, { error: "unauthorized" });
   }
 
   try {
@@ -340,13 +383,14 @@ const server = http.createServer(async (req, res) => {
       const body = await parseBody(req);
       if (!body || !body.transcript) return send(res, 400, { error: "transcript required" });
       const store = readStore();
+      const clean = stripServerFields(body);
       const incoming = {
         id: body.id || "hub_" + Date.now(),
         source: body.source || "saakshi-app",
         received_at: new Date().toISOString(),
         corpus_partition: body.corpus_partition || "field",
         language: body.language || body.dialect || body.tribe || "",
-        ...body,
+        ...clean,
       };
       const idx = store.corpus.findIndex((e) => e.id === incoming.id);
       let entry;

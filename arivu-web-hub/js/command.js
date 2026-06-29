@@ -1374,12 +1374,18 @@
       if (reading.temperature != null) set("s1-temp", reading.temperature + "°C");
       if (reading.humidity != null) set("s1-humid", reading.humidity + "%");
 
-      if (reading.smoke) setHtml("s1-smoke", '<span class="reading-alert">' + ic("flame") + " FIRE</span>");
-      else if (reading.gas != null) set("s1-smoke", "gas " + reading.gas);
+      // A partial LoRa packet (e.g. CLIMATE-only) omits smoke/gas/vibration. Fall
+      // back to the values the hub persisted into telemetry so a still-current
+      // FIRE/tamper reading isn't wiped to "Clear"/"0/s" on the next poll.
+      const smoke = reading.smoke != null ? reading.smoke : t.smoke;
+      const gas = reading.gas != null ? reading.gas : t.gas;
+      const vib = reading.vibration_rate != null ? reading.vibration_rate : t.vibration_rate;
+      if (smoke) setHtml("s1-smoke", '<span class="reading-alert">' + ic("flame") + " FIRE</span>");
+      else if (gas != null) set("s1-smoke", "gas " + gas);
       else set("s1-smoke", "Clear");
 
-      if (reading.vibration_rate != null) {
-        const v = Number(reading.vibration_rate);
+      if (vib != null) {
+        const v = Number(vib);
         setHtml("s1-vib", v > 0
           ? '<span class="reading-alert">' + ic("activity") + " " + v + "/s</span>"
           : "0/s");
@@ -1388,7 +1394,9 @@
       const sound = reading.sound_label || reading.sound_alert || t.current_sound || t.last_sound;
       const soundConf = reading.sound_conf != null ? reading.sound_conf : (t.current_sound_conf != null ? t.current_sound_conf : t.last_sound_conf);
       if (sound && sound !== "--") {
-        const pretty = String(sound).replace(/_/g, " ");
+        // sound is operator-untrusted (it arrives via the public, unauthenticated
+        // /api/sentinel/data endpoint) — escape before writing as innerHTML.
+        const pretty = esc(String(sound).replace(/_/g, " "));
         const pct = soundConf != null && Number(soundConf) > 0 ? " " + Math.round(Number(soundConf) * 100) + "%" : "";
         setHtml("s1-sound", '<span class="' + (sound === "background" ? "" : "reading-alert") + '">' + ic("activity") + " " + pretty + pct + "</span>");
       } else {
@@ -1452,6 +1460,10 @@
 
   // ---- navigation ----
   function setView(name) {
+    // Fall back to a real view if an unknown/removed id is requested (e.g. the
+    // assistant or LLM navigating to a tab that no longer exists) so the content
+    // pane never goes blank.
+    if (!VIEW_META[name]) name = "overview";
     document.querySelectorAll(".nav-btn").forEach((b) => {
       b.classList.toggle("active", b.dataset.view === name);
     });

@@ -54,6 +54,14 @@
 
   let current = "en";
 
+  // Only accept codes we actually ship. A plain `DICT[...][code]` truthiness
+  // check would pass inherited Object.prototype members (?lang=toString etc.),
+  // which then makes t() return those members and renders the UI as garbage.
+  const VALID_CODES = new Set(LANGS.map((l) => l.code));
+  function normalizeCode(code) {
+    return VALID_CODES.has(code) ? code : "en";
+  }
+
   function t(key) {
     const row = DICT[key];
     if (!row) return key;
@@ -71,7 +79,7 @@
   }
 
   function setLang(code) {
-    current = DICT["nav.map"][code] ? code : "en";
+    current = normalizeCode(code);
     try { localStorage.setItem("arivu-lang", current); } catch (_) {}
     apply();
     if (global.ArivuCommand && global.ArivuCommand.onLangChange) {
@@ -85,7 +93,7 @@
       const urlLang = new URLSearchParams(location.search).get("lang");
       saved = urlLang || localStorage.getItem("arivu-lang") || "en";
     } catch (_) {}
-    current = DICT["nav.map"][saved] ? saved : "en";
+    current = normalizeCode(saved);
   }
   init();
 
