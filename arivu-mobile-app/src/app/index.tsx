@@ -104,6 +104,14 @@ export default function HomeScreen() {
             onPress={() => router.push('/validate')}
             accentColor={Colors.headerDark}
           />
+          <ActionCard
+            backgroundColor="#2d6a4f"
+            icon={<Text style={{ fontSize: 18 }}>📍</Text>}
+            label="DEPLOY"
+            subtitle="stamp box location on map"
+            onPress={() => router.push('/deploy')}
+            accentColor="#2d6a4f"
+          />
         </View>
 
         <Pressable style={styles.resetBtn} onPress={handleResetLocal} disabled={resetting}>

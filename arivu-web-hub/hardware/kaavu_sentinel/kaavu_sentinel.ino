@@ -369,9 +369,19 @@ void printLiveStatus(bool armed, int gas, uint32_t vibRate) {
   Serial.printf("[%s] %s | gas %4d | vib %lu/s | ", mode, clockStr().c_str(), gas, (unsigned long)vibRate);
   if (!isnan(cachedT)) Serial.printf("%.1fC %.0f%%RH | ", cachedT, cachedH);
   else                 Serial.print("--C --%RH | ");
-  const char* shown = !armed ? "--" : ((recording && confirmedLabel[0]) ? confirmedLabel : "background");
+  const char* shown;
+  float shownConf;
+  if (!armed) {
+    shown = "--"; shownConf = 0.0f;
+  } else if (recording && confirmedLabel[0]) {
+    shown = confirmedLabel; shownConf = curConf;
+  } else if (curLabel[0]) {
+    shown = curLabel; shownConf = curConf;
+  } else {
+    shown = "background"; shownConf = 0.0f;
+  }
   Serial.printf("snd:%s %.2f | SD:%s LoRa:%s\n",
-    shown, (recording && confirmedLabel[0]) ? curConf : 0.0f,
+    shown, shownConf,
     comps[C_SD].ok ? "ok" : "--", comps[C_LORA].ok ? "ok" : "--");
 }
 

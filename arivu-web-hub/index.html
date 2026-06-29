@@ -24,10 +24,13 @@
       </div>
       <nav class="nav">
         <button type="button" class="nav-btn active" data-view="overview" data-icon="home"><span class="nav-label" data-i18n="nav.overview">Overview</span></button>
-        <button type="button" class="nav-btn" data-view="corpus" data-icon="book"><span class="nav-label" data-i18n="nav.knowledge">Knowledge</span> <span class="badge" id="navCorpusCount">0</span></button>
-        <button type="button" class="nav-btn" data-view="sentinels" data-icon="radio"><span class="nav-label" data-i18n="nav.sentinels">Sentinels</span> <span class="badge" id="navSentinelCount">0</span></button>
-        <button type="button" class="nav-btn" data-view="areas" data-icon="layers"><span class="nav-label" data-i18n="nav.areas">Areas</span> <span class="badge" id="navAreaCount">0</span></button>
         <button type="button" class="nav-btn" data-view="map" data-icon="map"><span class="nav-label" data-i18n="nav.map">Map</span></button>
+        <button type="button" class="nav-btn" data-view="serial" data-icon="terminal"><span class="nav-label">Serial</span></button>
+        <button type="button" class="nav-btn" data-view="sentinels" data-icon="radio"><span class="nav-label" data-i18n="nav.sentinels">Sentinels</span> <span class="badge" id="navSentinelCount">0</span></button>
+        <button type="button" class="nav-btn" data-view="corpus" data-icon="book"><span class="nav-label" data-i18n="nav.knowledge">Knowledge</span> <span class="badge" id="navCorpusCount">0</span></button>
+        <button type="button" class="nav-btn" data-view="areas" data-icon="layers"><span class="nav-label" data-i18n="nav.areas">Areas</span> <span class="badge" id="navAreaCount">0</span></button>
+        <div class="nav-divider"></div>
+        <button type="button" class="nav-btn" data-view="settings" data-icon="settings"><span class="nav-label">Settings</span></button>
       </nav>
       <div class="sidebar-foot">
         <div class="hub-pill" id="hubPill"><span class="dot"></span> Hub</div>
@@ -45,83 +48,114 @@
           <label class="search-wrap" id="searchWrap" hidden>
             <input type="search" id="corpusSearch" data-i18n-ph="search.placeholder" placeholder="Search corpus…" />
           </label>
-          <select class="lang-select" id="langSelect" aria-label="Language"></select>
-          <button type="button" class="btn" id="activityToggle" aria-label="Open activity log"><span class="btn-label" data-i18n="btn.activity">Activity</span></button>
-          <button type="button" class="btn" id="themeToggle" aria-label="Toggle theme"><span class="btn-label">Light</span></button>
-          <button type="button" class="btn" id="refreshBtn"><span class="btn-label" data-i18n="btn.refresh">Refresh</span></button>
         </div>
       </header>
 
       <!-- OVERVIEW -->
       <section class="view active" id="view-overview">
-        <div class="stats-grid">
-          <article class="stat-card">
-            <span class="stat-label" data-i18n="stat.corpus">Corpus entries</span>
-            <strong class="stat-value" id="statCorpus">0</strong>
-            <span class="stat-meta" id="statCorpusMeta">from Saakshi app</span>
-          </article>
-          <article class="stat-card">
-            <span class="stat-label" data-i18n="stat.sentinels">Sentinels online</span>
-            <strong class="stat-value" id="statSentinels">0</strong>
-            <span class="stat-meta" id="statSentinelsMeta">of 0 deployed</span>
-          </article>
-          <article class="stat-card">
-            <span class="stat-label" data-i18n="stat.typec">Type C predictions</span>
-            <strong class="stat-value" id="statTypeC">0</strong>
-            <span class="stat-meta">testable claims</span>
-          </article>
-          <article class="stat-card">
-            <span class="stat-label" data-i18n="stat.pending">Pending validation</span>
-            <strong class="stat-value" id="statPending">0</strong>
-            <span class="stat-meta">awaiting Kaalam</span>
-          </article>
-        </div>
-        <div class="overview-grid">
-          <div class="panel">
-            <div class="panel-head"><h2 data-i18n="panel.fieldmap">Field map</h2></div>
-            <div id="mapOverview" class="map-box"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-head"><h2 data-i18n="panel.sentinelhealth">Sentinel health</h2></div>
-            <div id="sentinelMini" class="sentinel-mini"></div>
+        <div class="ov-kpis">
+          <button type="button" class="ov-kpi" data-goto="corpus">
+            <span class="ov-kpi-label">Corpus</span>
+            <strong class="ov-kpi-val" id="statCorpus">0</strong>
+            <span class="ov-kpi-meta" id="statCorpusMeta">from Saakshi</span>
+          </button>
+          <button type="button" class="ov-kpi" data-goto="sentinels">
+            <span class="ov-kpi-label">Sentinels online</span>
+            <strong class="ov-kpi-val" id="statSentinels">0</strong>
+            <span class="ov-kpi-meta" id="statSentinelsMeta">of 0 deployed</span>
+          </button>
+          <button type="button" class="ov-kpi" data-goto="corpus">
+            <span class="ov-kpi-label">Type C</span>
+            <strong class="ov-kpi-val" id="statTypeC">0</strong>
+            <span class="ov-kpi-meta">predictions</span>
+          </button>
+          <button type="button" class="ov-kpi" data-goto="corpus">
+            <span class="ov-kpi-label">Pending</span>
+            <strong class="ov-kpi-val" id="statPending">0</strong>
+            <span class="ov-kpi-meta">validation</span>
+          </button>
+          <div class="ov-kpi ov-kpi-static">
+            <span class="ov-kpi-label">Alerts</span>
+            <strong class="ov-kpi-val" id="statAlerts">0</strong>
+            <span class="ov-kpi-meta" id="alertMeta">last 24h feed</span>
           </div>
         </div>
-        <div class="overview-grid">
-          <div class="panel">
-            <div class="panel-head"><h2>Kaavu Sentinel 01 — Meppadi, Wayanad</h2><span class="muted">Live · ESP32 → USB → hub</span></div>
-            <div class="sentinel-panel" id="liveSentinelPanel">
-              <div class="reading">
-                <span class="label">Temperature</span>
-                <span class="value" id="s1-temp">--°C</span>
-              </div>
-              <div class="reading">
-                <span class="label">Humidity</span>
-                <span class="value" id="s1-humid">--%</span>
-              </div>
-              <div class="reading">
-                <span class="label">Gas / Fire</span>
-                <span class="value" id="s1-smoke">Clear</span>
-              </div>
-              <div class="reading">
-                <span class="label">Vibration</span>
-                <span class="value" id="s1-vib">None</span>
-              </div>
-              <div class="reading">
-                <span class="label">Sound (AI)</span>
-                <span class="value" id="s1-sound">—</span>
+
+        <div class="ov-hero">
+          <div class="panel ov-map-panel">
+            <div class="panel-head bar">
+              <h2>Field map</h2>
+              <button type="button" class="btn sm" id="ovOpenMap">Open full map</button>
+            </div>
+            <div id="mapOverview" class="map-box ov-map"></div>
+          </div>
+
+          <div class="ov-side">
+            <div class="panel ov-system">
+              <div class="panel-head"><h2>System</h2></div>
+              <div class="ov-system-grid">
+                <div class="ov-sys" id="opsHub"><span class="dot"></span><span class="ov-sys-lbl">Hub</span><span class="ov-sys-val ops-pill-val">—</span></div>
+                <div class="ov-sys" id="opsGateway"><span class="dot"></span><span class="ov-sys-lbl">Gateway</span><span class="ov-sys-val ops-pill-val">—</span></div>
+                <div class="ov-sys" id="opsSerial"><span class="dot"></span><span class="ov-sys-lbl">Serial</span><span class="ov-sys-val ops-pill-val">—</span></div>
+                <div class="ov-sys" id="opsLive"><span class="dot"></span><span class="ov-sys-lbl">Live box</span><span class="ov-sys-val ops-pill-val">—</span></div>
               </div>
             </div>
+
+            <div class="panel ov-live-snap">
+              <div class="panel-head bar">
+                <div>
+                  <h2 id="liveSentinelTitle">Live sentinel</h2>
+                  <span class="muted" id="liveSentinelMeta">—</span>
+                </div>
+                <span class="live-badge" id="liveBadge">OFFLINE</span>
+              </div>
+              <div class="ov-live-metrics">
+                <div class="ov-metric"><span class="label">Temp</span><span class="value" id="s1-temp">—</span></div>
+                <div class="ov-metric"><span class="label">Humidity</span><span class="value" id="s1-humid">—</span></div>
+                <div class="ov-metric highlight"><span class="label">Sound</span><span class="value" id="s1-sound">—</span></div>
+                <div class="ov-metric"><span class="label">Gas</span><span class="value" id="s1-smoke">—</span></div>
+              </div>
+              <p class="ov-live-loc muted" id="s1-location">Deployment not stamped</p>
+              <p class="ov-live-upd mono muted">Updated <span id="s1-updated">—</span></p>
+              <div class="ov-live-actions">
+                <button type="button" class="btn sm" data-goto="sentinels">All sentinels</button>
+                <button type="button" class="btn sm" id="ovOpenSerial">Serial monitor</button>
+              </div>
+              <span id="s1-vib" hidden></span>
+              <span id="s1-link" hidden></span>
+              <span id="s1-mode" hidden></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ov-mid">
+          <div class="panel">
+            <div class="panel-head bar">
+              <h2>Sentinel fleet</h2>
+              <button type="button" class="btn sm" data-goto="sentinels">Manage</button>
+            </div>
+            <div class="ov-fleet" id="overviewFleet"></div>
           </div>
           <div class="panel">
-            <div class="panel-head"><h2 data-i18n="panel.alerts">Live alert feed</h2><span class="muted" id="alertMeta">—</span></div>
-            <div class="alert-log" id="alert-list"><p class="empty">No alerts yet</p></div>
+            <div class="panel-head"><h2>Recent alerts</h2></div>
+            <div class="alert-log compact" id="alert-list"><p class="empty">No alerts yet</p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head bar">
+              <h2>Recent knowledge</h2>
+              <button type="button" class="btn sm" data-goto="corpus">View all</button>
+            </div>
+            <div class="recent-list" id="recentCorpus"></div>
           </div>
         </div>
+
         <div class="panel">
-          <div class="panel-head"><h2 data-i18n="panel.recent">Recent syncs</h2></div>
-          <div id="recentCorpus" class="recent-list"></div>
+          <div class="panel-head bar">
+            <h2>Operating areas</h2>
+            <button type="button" class="btn sm" data-goto="areas">All areas</button>
+          </div>
+          <div class="ov-areas" id="overviewAreas"></div>
         </div>
-        <div class="overview-types" id="overviewTypes"></div>
       </section>
 
       <!-- AREAS: grove/region overview, drill into each -->
@@ -172,17 +206,46 @@
         </div>
       </section>
 
-      <!-- SENTINELS (with live feeds folded in) -->
+      <!-- SENTINELS -->
       <section class="view" id="view-sentinels">
         <div class="panel-head bar plain">
-          <h2 data-i18n="panel.boxes">Kaavu sentinel boxes</h2>
+          <div>
+            <h2 data-i18n="panel.boxes">Kaavu sentinel boxes</h2>
+            <p class="muted" style="margin:4px 0 0">Field sensors that test elder predictions synced from the Saakshi app</p>
+          </div>
           <button type="button" class="btn primary" id="addSentinelBtn"><span class="btn-label" data-i18n="btn.register">Register box</span></button>
         </div>
         <div class="sentinel-grid" id="sentinelGrid"></div>
         <div class="panel" style="margin-top:14px">
-          <div class="panel-head"><h2 data-i18n="panel.feeds">Live feeds</h2><span class="muted">Open-Meteo weather + GBIF species near each box</span></div>
-          <div class="feeds-grid" id="feedsGrid">
-            <p class="empty">Open a box's Live feeds, or refresh to load external sources…</p>
+          <div class="panel-head bar">
+            <h2>Elder validation</h2>
+            <span class="muted">Each box can be linked to a Type C claim from Knowledge — Kaalam compares sentinel readings to the elder’s saying</span>
+          </div>
+          <div class="validation-grid" id="validationGrid"></div>
+        </div>
+      </section>
+
+      <!-- SERIAL MONITOR (per sentinel) -->
+      <section class="view" id="view-serial">
+        <div class="serial-layout">
+          <aside class="serial-sentinel-list panel">
+            <div class="panel-head"><h2>Sentinels</h2></div>
+            <div class="serial-sentinel-tabs" id="serialSentinelTabs"></div>
+          </aside>
+          <div class="panel serial-view-panel">
+            <div class="panel-head bar">
+              <div>
+                <h2 id="serialPanelTitle">Serial monitor</h2>
+                <span class="muted" id="serialPanelMeta">ESP32 USB via gateway · close Arduino Serial Monitor first</span>
+              </div>
+              <div class="serial-toolbar">
+                <label class="serial-filter"><input type="checkbox" id="serialFilterListen" checked /> LISTEN/REC</label>
+                <label class="serial-filter"><input type="checkbox" id="serialFilterAlert" checked /> Alerts</label>
+                <button type="button" class="btn sm" id="serialPauseBtn">Pause</button>
+                <button type="button" class="btn sm" id="serialClearBtn">Clear</button>
+              </div>
+            </div>
+            <pre class="serial-monitor tall" id="serialMonitor" aria-live="polite"><span class="serial-empty">Select a sentinel…</span></pre>
           </div>
         </div>
       </section>
@@ -201,22 +264,71 @@
               </div>
             </div>
           </div>
-          <div id="mapFull" class="map-box tall map-2d"></div>
+          <div id="mapFull" class="map-box tall"></div>
         </div>
       </section>
 
-    </div>
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <div class="settings-grid">
+          <div class="panel">
+            <div class="panel-head"><h2>Connection</h2></div>
+            <form class="settings-form" id="settingsForm">
+              <label>Hub API URL
+                <input type="url" name="hubUrl" id="setHubUrl" placeholder="http://localhost:8787" />
+                <small class="field-hint">Where the hub server runs (port 8787). Mobile app uses the same URL.</small>
+              </label>
+              <label>Live sentinel ID
+                <input type="text" name="liveSentinelId" id="setLiveSentinelId" placeholder="grove_1" />
+                <small class="field-hint">Which box Field Ops monitors — must match gateway <code>ARIVU_SENTINEL_ID</code>.</small>
+              </label>
+              <label>Dashboard refresh (seconds)
+                <input type="number" name="pollIntervalSec" id="setPollSec" min="5" max="120" value="15" />
+              </label>
+              <label>Serial monitor refresh (ms)
+                <input type="number" name="serialPollMs" id="setSerialPollMs" min="500" max="5000" step="100" value="1000" />
+              </label>
+              <div class="settings-actions">
+                <button type="submit" class="btn primary">Save settings</button>
+                <button type="button" class="btn" id="settingsResetBtn">Reset defaults</button>
+              </div>
+            </form>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>System status</h2></div>
+            <dl class="status-dl" id="settingsStatus">
+              <dt>Hub</dt><dd id="setStatHub">—</dd>
+              <dt>Gateway</dt><dd id="setStatGateway">—</dd>
+              <dt>Serial port</dt><dd id="setStatPort">—</dd>
+              <dt>Live sentinel</dt><dd id="setStatSentinel">—</dd>
+              <dt>Last serial line</dt><dd id="setStatSerial">—</dd>
+            </dl>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Display</h2></div>
+            <div class="settings-form">
+              <label>Theme
+                <select id="setTheme">
+                  <option value="dark">Dark (Almanac night)</option>
+                  <option value="light">Light (Almanac paper)</option>
+                </select>
+              </label>
+              <label>Language
+                <select id="setLang"></select>
+              </label>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>How it connects</h2></div>
+            <div class="settings-help">
+              <p><strong>Data flow:</strong> ESP32 (USB) → <code>gateway.js</code> → Hub API → this dashboard.</p>
+              <p>Run everything with <code>make</code> from the project root. Only one program can use the USB port — close Arduino Serial Monitor before starting the gateway.</p>
+              <p>Command center: <code>http://localhost:8765</code> · Hub: <code>http://localhost:8787</code></p>
+            </div>
+          </div>
+        </div>
+      </section>
   </div>
-
-  <!-- Activity slide-over (opened from the top bar) -->
-  <div class="drawer-scrim" id="activityScrim" hidden></div>
-  <aside class="drawer" id="activityDrawer" hidden aria-label="Activity log">
-    <div class="drawer-head">
-      <h2 class="display" data-i18n="drawer.activity">Activity log</h2>
-      <button type="button" class="icon-btn" id="activityClose" aria-label="Close">✕</button>
-    </div>
-    <ul class="activity-log" id="activityLog"></ul>
-  </aside>
 
   <dialog id="entryModal" class="modal wide">
     <div class="modal-head">
@@ -285,8 +397,16 @@
       <label>Role <input type="text" name="incharge_role" placeholder="BMC Field Officer" /></label>
       <label>Phone <input type="tel" name="incharge_phone" /></label>
       <label>Organisation <input type="text" name="incharge_organisation" /></label>
-      <label>Linked elder <input type="text" name="linked_elder" /></label>
-      <label>Linked prediction <input type="text" name="linked_prediction" /></label>
+      <label>Linked elder <input type="text" name="linked_elder" placeholder="Elder name or ID from TEACH" /></label>
+      <label class="span2">Linked knowledge entry (Type C)
+        <select name="linked_corpus_id" id="sentinelLinkedCorpus">
+          <option value="">— Select from Knowledge store —</option>
+        </select>
+        <small class="field-hint">Elder prediction this box helps validate — synced from the mobile app</small>
+      </label>
+      <label class="span2">Validation focus
+        <input type="text" name="linked_prediction" placeholder="Short label, e.g. first rain after Pala flowers" />
+      </label>
       <label>Installed <input type="date" name="installed_date" /></label>
       <label class="span2">Notes <textarea name="notes" rows="2"></textarea></label>
     </form>
@@ -319,7 +439,6 @@
   <script src="js/i18n.js"></script>
   <script src="js/hub-client.js"></script>
   <script src="js/sentinels.js"></script>
-  <script src="js/ghatsmap.js"></script>
   <script src="js/command.js"></script>
   <script src="js/assistant.js"></script>
 </body>

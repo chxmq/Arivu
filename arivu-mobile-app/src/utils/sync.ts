@@ -107,6 +107,59 @@ export async function hubHealth(): Promise<boolean> {
   }
 }
 
+export type SentinelSummary = {
+  id: string;
+  name: string;
+  location?: string;
+  lat?: number | null;
+  lng?: number | null;
+  location_stamped_at?: string | null;
+  location_stamped_by?: string | null;
+  live_hardware?: boolean;
+};
+
+/** List sentinel boxes registered on the hub. */
+export async function fetchSentinels(): Promise<SentinelSummary[]> {
+  try {
+    const res = await fetch(`${HUB_URL}/api/sentinels`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const rows = (data.sentinels || data || []) as SentinelSummary[];
+    return rows.filter((s) => s && s.id);
+  } catch {
+    return [];
+  }
+}
+
+/** BMC worker stamps deployment coordinates from the field (mobile GPS). */
+export async function stampSentinelLocation(
+  sentinelId: string,
+  payload: {
+    lat: number;
+    lng: number;
+    geohash?: string;
+    stamped_by: string;
+    location?: string;
+    notes?: string;
+  }
+): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `${HUB_URL}/api/sentinels/${encodeURIComponent(sentinelId)}/stamp-location`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 /** Pull sentinel + manual assessments from hub — does NOT overwrite unconfirmed status. */
 export async function syncRecommendationsFromHub(
   updateEntry: (id: string, patch: Partial<KnowledgeEntry>) => Promise<unknown>

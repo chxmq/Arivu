@@ -28,14 +28,8 @@ const SECTIONS = [
   {
     id: "sentinels",
     name: "Sentinels",
-    desc: "Kaavu sentinel boxes — status, battery, incharge officer, maintenance, register new boxes.",
-    tips: ["Register box for new field deployments", "Check incharge contact before a site visit"],
-  },
-  {
-    id: "feeds",
-    name: "Live feeds",
-    desc: "Open-Meteo weather and GBIF species observations per sentinel location.",
-    tips: ["Compare elder Type C signals with live weather", "GBIF shows species near each box"],
+    desc: "Kaavu sentinel boxes linked to Type C elder claims from Knowledge. Manage links, view Kaalam validation status, and field telemetry.",
+    tips: ["Link each box to a Type C entry synced from Saakshi TEACH", "Use Manage claim to update validation status", "Register box for new field deployments"],
   },
   {
     id: "map",

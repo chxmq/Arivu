@@ -54,4 +54,4 @@ library. Bridge USB serial to the dashboard with:
 cd arivu-web-hub && node gateway.js
 ```
 
-Run everything at once from the repo root: `make`
+Run everything at once from the repo root: `make` (hub, dashboard, mobile app, and ESP32 gateway).

@@ -63,6 +63,31 @@ function loadEnv() {
 loadEnv();
 
 const PORT = Number(process.env.ARIVU_HUB_PORT || 8787);
+
+/** In-memory ESP32 serial log (gateway.js → hub). Not persisted — resets on hub restart. */
+const serialLog = [];
+const gatewayStatus = {
+  last_line_at: null,
+  last_heartbeat_at: null,
+  serial_port: null,
+  sentinel_id: null,
+  sentinel_name: null,
+  hub_started_at: new Date().toISOString(),
+};
+
+function appendSerialLog(line, extra = {}) {
+  const entry = { ts: new Date().toISOString(), line: String(line).trim(), ...extra };
+  if (!entry.line) return;
+  serialLog.unshift(entry);
+  if (serialLog.length > 500) serialLog.length = 500;
+  gatewayStatus.last_line_at = entry.ts;
+}
+
+function gatewayOnline() {
+  const ts = gatewayStatus.last_line_at || gatewayStatus.last_heartbeat_at;
+  if (!ts) return false;
+  return Date.now() - new Date(ts).getTime() < 30_000;
+}
 const HOST = process.env.ARIVU_HUB_HOST || "0.0.0.0";
 
 function readStore() {
@@ -71,7 +96,17 @@ function readStore() {
 
 function writeStore(data) {
   data.updated_at = new Date().toISOString();
-  fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2));
+  const tmp = STORE_PATH + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+  fs.renameSync(tmp, STORE_PATH);
+}
+
+let storeChain = Promise.resolve();
+/** Serialize read-modify-write so concurrent gateway + dashboard requests cannot corrupt the store. */
+function withStore(fn) {
+  const run = storeChain.then(fn);
+  storeChain = run.catch(() => {});
+  return run;
 }
 
 function persistWithValidation(store, pipeOptions = {}) {
@@ -81,8 +116,66 @@ function persistWithValidation(store, pipeOptions = {}) {
   return pipe;
 }
 
+/** Merge a live ESP32/gateway reading into the matching sentinel record. */
+function syncLiveSentinelReading(store, reading) {
+  const sid = reading.sentinel_id || "grove_1";
+  const ts = reading.received_at || new Date().toISOString();
+  store.sentinels = store.sentinels || [];
+
+  let sentinel = store.sentinels.find((s) => s.id === sid);
+  if (!sentinel) {
+    sentinel = {
+      id: sid,
+      name: process.env.ARIVU_SENTINEL_NAME || "Kaavu Sentinel 01",
+      location: "Awaiting field stamp",
+      lat: null,
+      lng: null,
+      status: "offline",
+      maintenance_status: "operational",
+      live_hardware: true,
+      telemetry: {},
+    };
+    store.sentinels.unshift(sentinel);
+  }
+
+  const t = { ...(sentinel.telemetry || {}) };
+  if (reading.temperature != null) t.temp_c = reading.temperature;
+  if (reading.humidity != null) t.humidity_pct = reading.humidity;
+  if (reading.gas != null) t.gas = reading.gas;
+  if (reading.smoke != null) t.smoke = reading.smoke;
+  if (reading.vibration_rate != null) t.vibration_rate = reading.vibration_rate;
+  if (reading.sd_ok != null) t.sd_ok = reading.sd_ok;
+  if (reading.lora_ok != null) t.lora_ok = reading.lora_ok;
+  if (reading.recording != null) t.recording = reading.recording;
+  if (reading.link != null) t.link = reading.link;
+  if (reading.sound_label != null) {
+    t.current_sound = reading.sound_label;
+    t.current_sound_conf = reading.sound_conf;
+  }
+  if (reading.sound_alert) {
+    t.last_sound = reading.sound_alert;
+    t.last_sound_conf = reading.sound_conf;
+    t.last_sound_at = ts;
+  }
+  // Location comes only from field worker stamp (mobile app), not sensor stream.
+
+  sentinel.telemetry = t;
+  sentinel.status = "online";
+  sentinel.last_live_at = ts;
+  sentinel.live_hardware = true;
+  return store;
+}
+
 function simulateTelemetry(store) {
   store.sentinels = (store.sentinels || []).map((s) => {
+    // Do not overwrite telemetry for a USB/live box that is actively streaming.
+    if (s.live_hardware && s.last_live_at) {
+      const age = Date.now() - new Date(s.last_live_at).getTime();
+      if (age < 120_000) {
+        return { ...s, status: "online" };
+      }
+      return { ...s, status: "offline" };
+    }
     const t = { ...s.telemetry };
     t.temp_c = round(t.temp_c + (Math.random() - 0.5) * 0.6, 1);
     t.humidity_pct = clamp(round(t.humidity_pct + (Math.random() - 0.5) * 4, 0), 40, 99);
@@ -361,6 +454,7 @@ const server = http.createServer(async (req, res) => {
       const allowed = [
         "name", "location", "status", "maintenance_status", "linked_elder",
         "linked_prediction", "linked_corpus_id", "notes", "installed_date", "incharge",
+        "lat", "lng", "geohash", "location_stamped_at", "location_stamped_by",
       ];
       allowed.forEach((k) => {
         if (body && body[k] !== undefined) {
@@ -374,6 +468,48 @@ const server = http.createServer(async (req, res) => {
       s.updated_at = new Date().toISOString();
       writeStore(store);
       console.log("[hub] sentinel updated:", id);
+      return send(res, 200, { ok: true, sentinel: s });
+    }
+
+    // Field worker stamps deployment coordinates from the mobile app (expo-location).
+    if (method === "POST" && url.pathname.match(/^\/api\/sentinels\/[^/]+\/stamp-location$/)) {
+      const id = decodeURIComponent(url.pathname.split("/")[3]);
+      const body = await parseBody(req);
+      if (!body || body.lat == null || body.lng == null) {
+        return send(res, 400, { error: "lat and lng required" });
+      }
+      const lat = Number(body.lat);
+      const lng = Number(body.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return send(res, 400, { error: "invalid coordinates" });
+      }
+      const store = readStore();
+      let s = store.sentinels.find((x) => x.id === id);
+      if (!s) {
+        s = {
+          id,
+          name: body.name || process.env.ARIVU_SENTINEL_NAME || "Kaavu Sentinel 01",
+          location: body.location || "Field deployment",
+          status: "offline",
+          maintenance_status: "operational",
+          live_hardware: true,
+          telemetry: {},
+          incharge: body.incharge || { name: body.stamped_by || "", role: "BMC Field Officer", organisation: "" },
+        };
+        store.sentinels.unshift(s);
+      }
+      const ts = new Date().toISOString();
+      s.lat = lat;
+      s.lng = lng;
+      s.geohash = body.geohash || "";
+      s.location_stamped_at = ts;
+      s.location_stamped_by = body.stamped_by || body.incharge?.name || "Field worker";
+      if (body.location) s.location = body.location;
+      if (body.notes) s.notes = body.notes;
+      if (!s.installed_date) s.installed_date = ts.slice(0, 10);
+      s.updated_at = ts;
+      writeStore(store);
+      console.log("[hub] location stamped:", id, lat, lng, "by", s.location_stamped_by);
       return send(res, 200, { ok: true, sentinel: s });
     }
 
@@ -553,17 +689,33 @@ const server = http.createServer(async (req, res) => {
     if (method === "POST" && url.pathname === "/api/sentinel/data") {
       const body = await parseBody(req);
       if (!body) return send(res, 400, { error: "json body required" });
-      const store = readStore();
-      store.sentinelData = store.sentinelData || [];
-      store.sentinelData.unshift({ ...body, received_at: new Date().toISOString() });
-      store.sentinelData = store.sentinelData.slice(0, 100); // keep last 100 readings
-      writeStore(store);
+      await withStore(async () => {
+        const store = readStore();
+        const received_at = new Date().toISOString();
+        const row = { ...body, received_at };
+        store.sentinelData = store.sentinelData || [];
+        store.sentinelData.unshift(row);
+        store.sentinelData = store.sentinelData.slice(0, 100); // keep last 100 readings
+        syncLiveSentinelReading(store, row);
+        writeStore(store);
+      });
       return send(res, 200, { ok: true });
     }
 
     if (method === "GET" && url.pathname === "/api/sentinel/data") {
       const store = readStore();
       return send(res, 200, store.sentinelData || []);
+    }
+
+    // Merged live view: latest reading + registered sentinel (read-only; gateway POST persists).
+    if (method === "GET" && url.pathname === "/api/sentinel/live") {
+      const store = readStore();
+      const sid = url.searchParams.get("id") || "grove_1";
+      const reading = (store.sentinelData || []).find((r) => r.sentinel_id === sid)
+        || (store.sentinelData || [])[0]
+        || null;
+      const sentinel = (store.sentinels || []).find((s) => s.id === sid) || null;
+      return send(res, 200, { sentinel_id: sid, reading, sentinel });
     }
 
     // Live alert feed (smoke / sound / temperature) raised by sentinels.
@@ -581,6 +733,62 @@ const server = http.createServer(async (req, res) => {
     if (method === "GET" && url.pathname === "/api/alerts") {
       const store = readStore();
       return send(res, 200, store.alerts || []);
+    }
+
+    // Raw serial lines from gateway.js (live monitor in Command Center).
+    if (method === "POST" && url.pathname === "/api/gateway/log") {
+      const body = await parseBody(req);
+      if (!body || !body.line) return send(res, 400, { error: "line required" });
+      appendSerialLog(body.line, { kind: body.kind || "serial", sentinel_id: body.sentinel_id || gatewayStatus.sentinel_id });
+      return send(res, 200, { ok: true });
+    }
+
+    if (method === "POST" && url.pathname === "/api/gateway/heartbeat") {
+      const body = await parseBody(req);
+      gatewayStatus.last_heartbeat_at = new Date().toISOString();
+      if (body) {
+        if (body.serial_port) gatewayStatus.serial_port = body.serial_port;
+        if (body.sentinel_id) gatewayStatus.sentinel_id = body.sentinel_id;
+        if (body.sentinel_name) gatewayStatus.sentinel_name = body.sentinel_name;
+      }
+      return send(res, 200, { ok: true });
+    }
+
+    if (method === "GET" && url.pathname === "/api/gateway/log") {
+      const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit") || 200)));
+      const sid = url.searchParams.get("sentinel_id");
+      let lines = serialLog;
+      if (sid) {
+        lines = serialLog.filter((e) => e.sentinel_id === sid || (!e.sentinel_id && sid === (gatewayStatus.sentinel_id || "grove_1")));
+      }
+      return send(res, 200, {
+        lines: lines.slice(0, limit),
+        gateway: { ...gatewayStatus, online: gatewayOnline() },
+      });
+    }
+
+    if (method === "POST" && url.pathname === "/api/gateway/log/clear") {
+      serialLog.length = 0;
+      return send(res, 200, { ok: true });
+    }
+
+    if (method === "GET" && url.pathname === "/api/system/status") {
+      const store = readStore();
+      const sid = gatewayStatus.sentinel_id || "grove_1";
+      const reading = (store.sentinelData || []).find((r) => r.sentinel_id === sid) || null;
+      const sentinel = (store.sentinels || []).find((s) => s.id === sid) || null;
+      const liveAt = reading?.received_at || sentinel?.last_live_at || null;
+      const liveOnline = liveAt && Date.now() - new Date(liveAt).getTime() < 120_000;
+      return send(res, 200, {
+        hub: { online: true, started_at: gatewayStatus.hub_started_at, port: PORT },
+        gateway: { ...gatewayStatus, online: gatewayOnline() },
+        live_sentinel: {
+          id: sid,
+          name: sentinel?.name || gatewayStatus.sentinel_name,
+          online: liveOnline,
+          last_reading_at: liveAt,
+        },
+      });
     }
 
     if (method === "GET" && url.pathname === "/api/dashboard") {
@@ -612,6 +820,9 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+process.on("uncaughtException", (err) => console.error("[hub] uncaught:", err));
+process.on("unhandledRejection", (err) => console.error("[hub] unhandled:", err));
+
 server.listen(PORT, HOST, () => {
   console.log(`Arivu Hub → http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}`);
   console.log("  GET  /api/dashboard  — corpus + sentinels (live sim)");
@@ -626,4 +837,6 @@ server.listen(PORT, HOST, () => {
   console.log("  GET  /api/sentinel/data — latest sentinel readings");
   console.log("  POST /api/alerts     — raise a live alert (smoke / sound / temp)");
   console.log("  GET  /api/alerts     — live alert feed");
+  console.log("  GET  /api/gateway/log — ESP32 serial monitor (via gateway.js)");
+  console.log("  GET  /api/system/status — hub + gateway + live sentinel health");
 });

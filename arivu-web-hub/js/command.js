@@ -6,26 +6,49 @@
   let state = {
     corpus: [],
     sentinels: [],
-    feeds: [],
+    activity: [],
     hubOnline: false,
     selectedId: null,
     selectedSentinelId: null,
     search: "",
-    activity: [],
+    serialPaused: false,
+    serialLines: [],
+    serialSentinelId: null,
+    gatewaySentinelId: null,
   };
 
   let mapOverview = null;
   let mapFull = null;
-  let corpusMarkers = [];
-  let groveMarkers = [];
+  let overviewCorpusMarkers = [];
+  let fullCorpusMarkers = [];
   let pollTimer = null;
+  let serialTimer = null;
+  let systemTimer = null;
+
+  const DEFAULT_SETTINGS = {
+    hubUrl: (CFG && CFG.hub && CFG.hub.url) || "http://localhost:8787",
+    liveSentinelId: "grove_1",
+    pollIntervalSec: 15,
+    serialPollMs: 1000,
+  };
+
+  function loadSettings() {
+    const s = (window.ArivuHub && ArivuHub.getSettings()) || {};
+    return Object.assign({}, DEFAULT_SETTINGS, s);
+  }
+
+  function getLiveSentinelId() {
+    return loadSettings().liveSentinelId || "grove_1";
+  }
 
   const VIEW_META = {
-    overview: { title: "Overview", subtitle: "Western Ghats field operations" },
+    overview: { title: "Overview", subtitle: "Western Ghats operations at a glance" },
+    serial: { title: "Serial", subtitle: "ESP32 USB output per sentinel" },
     corpus: { title: "Knowledge", subtitle: "Elder corpus from Saakshi · structured & exportable" },
-    sentinels: { title: "Sentinels", subtitle: "Kaavu box health, telemetry & live feeds" },
+    sentinels: { title: "Sentinels", subtitle: "Kaavu boxes linked to elder predictions for Kaalam validation" },
     areas: { title: "Areas", subtitle: "Corpus & sentinels grouped by grove / region" },
     map: { title: "Map", subtitle: "Corpus entries and sentinel positions" },
+    settings: { title: "Settings", subtitle: "Connection, display, and system status" },
   };
 
   function esc(s) {
@@ -37,7 +60,6 @@
     const time = new Date().toLocaleTimeString("en-IN", { hour12: false });
     state.activity.unshift({ time, msg });
     if (state.activity.length > 50) state.activity.pop();
-    renderActivity();
   }
 
   function fmtTime(iso) {
@@ -124,6 +146,11 @@
 
   function sentinelHealth(s) {
     const t = s.telemetry || {};
+    if (s.live_hardware && s.last_live_at) {
+      const age = Date.now() - new Date(s.last_live_at).getTime();
+      if (age < 120_000) return 95;
+      if (age < 600_000) return 55;
+    }
     const batt = t.battery_pct != null ? t.battery_pct : 50;
     const online = s.status === "online";
     let score = online ? 40 : 0;
@@ -197,7 +224,9 @@
     renderOverviewTypes();
     renderAreas();
     renderDataset();
-    if (document.querySelector("#view-sentinels.active")) renderFeeds();
+    renderOverview();
+    if (state.currentView === "serial") renderSerialSentinelTabs();
+    if (document.querySelector("#view-sentinels.active")) renderSentinelValidation();
   }
 
   function renderNavBadges() {
@@ -341,11 +370,68 @@
     const online = state.sentinels.filter((s) => s.status === "online").length;
 
     $("statCorpus").textContent = c.length;
-    $("statCorpusMeta").textContent = c.length ? "synced from field" : "waiting for Saakshi";
+    const metaEl = $("statCorpusMeta");
+    if (metaEl) metaEl.textContent = c.length ? "synced from field" : "waiting for Saakshi";
     $("statSentinels").textContent = online;
     $("statSentinelsMeta").textContent = "of " + state.sentinels.length + " deployed";
     $("statTypeC").textContent = typeC;
     $("statPending").textContent = pending;
+  }
+
+  function renderOverview() {
+    renderOverviewFleet();
+    renderOverviewAreas();
+  }
+
+  function renderOverviewFleet() {
+    const el = $("overviewFleet");
+    if (!el) return;
+    if (!state.sentinels.length) {
+      el.innerHTML = '<p class="empty muted">No sentinels registered — add one from the Sentinels tab.</p>';
+      return;
+    }
+    el.innerHTML = state.sentinels.slice(0, 8).map((s) => {
+      const t = s.telemetry || {};
+      const live = s.live_hardware && isLiveActive(s);
+      const h = sentinelHealth(s);
+      const tele = live
+        ? (t.temp_c != null ? t.temp_c + "°C" : "—") + " · " + (t.current_sound || t.last_sound || "quiet")
+        : (t.temp_c != null ? t.temp_c + "°C" : "—") + " · " + h + "% health";
+      return (
+        '<button type="button" class="ov-fleet-card' + (live ? " live" : "") + '" data-goto-sentinel="' + esc(s.id) + '">' +
+          '<span class="ov-fleet-dot ' + esc(s.status || "offline") + '"></span>' +
+          '<span class="ov-fleet-name">' + esc(s.name) + "</span>" +
+          '<span class="ov-fleet-meta muted">' + esc(s.location || s.id) + "</span>" +
+          '<span class="ov-fleet-tele mono">' + esc(tele) + "</span>" +
+        "</button>"
+      );
+    }).join("");
+    el.querySelectorAll("[data-goto-sentinel]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.selectedSentinelId = btn.dataset.gotoSentinel;
+        setView("sentinels");
+      });
+    });
+  }
+
+  function renderOverviewAreas() {
+    const el = $("overviewAreas");
+    if (!el) return;
+    const areas = groupAreas().slice(0, 6);
+    if (!areas.length) {
+      el.innerHTML = '<p class="empty muted">No regional data yet.</p>';
+      return;
+    }
+    el.innerHTML = areas.map((a) =>
+      '<button type="button" class="ov-area-chip" data-area="' + esc(a.name) + '">' +
+        '<strong>' + esc(a.name) + "</strong>" +
+        '<span>' + a.sentinels.length + " sentinels · " + a.corpus.length + " entries</span>" +
+        (a.alerts ? '<em class="ov-area-warn">' + a.alerts + " alert" + (a.alerts > 1 ? "s" : "") + "</em>" : "") +
+      "</button>"
+    ).join("");
+    el.querySelectorAll("[data-area]").forEach((btn) => {
+      btn.addEventListener("click", () => { setView("areas"); selectArea(btn.dataset.area); });
+    });
   }
 
   function filteredCorpus() {
@@ -401,6 +487,126 @@
     });
   }
 
+  function typeCEntries() {
+    return state.corpus.filter((e) => {
+      const k = typeKey(e.knowledge_type);
+      return k === "C" || String(e.knowledge_type || "").toUpperCase().includes("TYPE_C");
+    });
+  }
+
+  function linkedCorpusEntry(s) {
+    if (!s || !s.linked_corpus_id) return null;
+    return state.corpus.find((e) => e.id === s.linked_corpus_id) || null;
+  }
+
+  function validationBadge(entry) {
+    if (!entry) return { cls: "pending", label: "Unlinked" };
+    const val = entry.validation_status || "PENDING";
+    const rec = entry.sentinel_recommendation && entry.sentinel_recommendation.status;
+    const label = rec && rec !== val ? rec : val;
+    const cls = label === "VALIDATED" ? "ok" : label === "BROKEN" ? "warn" : label === "WEAKENING" ? "warn" : "pending";
+    return { cls, label, rec };
+  }
+
+  function populateLinkedCorpusSelect(selectedId) {
+    const sel = $("sentinelLinkedCorpus");
+    if (!sel) return;
+    const typeC = typeCEntries();
+    const opts = ['<option value="">— Select from Knowledge store —</option>']
+      .concat(typeC.map((e) =>
+        '<option value="' + esc(e.id) + '"' + (e.id === selectedId ? " selected" : "") + ">" +
+          esc(e.elder_name || "Elder") + " · " + esc((e.transcript || "").slice(0, 55)) + (e.transcript && e.transcript.length > 55 ? "…" : "") +
+        "</option>"
+      ));
+    if (!typeC.length) {
+      opts.push('<option value="" disabled>No Type C entries — sync from Saakshi TEACH</option>');
+    }
+    sel.innerHTML = opts.join("");
+  }
+
+  function renderSentinelValidation() {
+    const grid = $("validationGrid");
+    if (!grid) return;
+    if (!state.sentinels.length) {
+      grid.innerHTML = '<p class="empty">Register a sentinel box, then link it to an elder prediction from Knowledge.</p>';
+      return;
+    }
+    grid.innerHTML = state.sentinels.map((s) => {
+      const entry = linkedCorpusEntry(s);
+      const badge = validationBadge(entry);
+      const t = s.telemetry || {};
+      const live = s.live_hardware && isLiveActive(s);
+      const signals = live
+        ? [
+            t.temp_c != null ? t.temp_c + "°C" : null,
+            t.last_sound || t.current_sound ? String(t.last_sound || t.current_sound).replace(/_/g, " ") : null,
+            t.gas != null ? "gas " + t.gas : null,
+          ].filter(Boolean).join(" · ")
+        : [
+            t.rain_mm_24h != null ? t.rain_mm_24h + " mm rain" : null,
+            t.bioacoustic_events_24h != null ? t.bioacoustic_events_24h + " bio events" : null,
+            t.temp_c != null ? t.temp_c + "°C" : null,
+          ].filter(Boolean).join(" · ");
+
+      if (!entry) {
+        return (
+          '<article class="val-card unlinked">' +
+            '<div class="val-head"><h3>' + esc(s.name) + '</h3><span class="val-badge pending">No claim linked</span></div>' +
+            '<p class="muted">' + esc(s.id) + " · " + esc(s.location || "") + "</p>" +
+            '<p class="val-empty">Assign a Type C elder prediction so this box can validate field conditions against what the elder said.</p>' +
+            '<div class="val-actions">' +
+              '<button type="button" class="btn sm" data-manage-sentinel="' + esc(s.id) + '">Link prediction</button>' +
+              '<button type="button" class="btn sm" data-goto-corpus>Open Knowledge</button>' +
+            "</div></article>"
+        );
+      }
+
+      const rec = entry.sentinel_recommendation;
+      const recHtml = rec
+        ? '<p class="val-rec"><strong>Kaalam assessment:</strong> ' + esc(rec.status || "—") +
+          (rec.finding ? '<br><span class="muted">' + esc(String(rec.finding).slice(0, 200)) + (String(rec.finding).length > 200 ? "…" : "") + "</span>" : "") +
+          "</p>"
+        : "";
+
+      return (
+        '<article class="val-card">' +
+          '<div class="val-head">' +
+            '<h3>' + esc(s.name) + '</h3>' +
+            '<span class="val-badge ' + badge.cls + '">' + esc(badge.label) + "</span>" +
+          "</div>" +
+          '<p class="val-elder"><b>' + esc(entry.elder_name || s.linked_elder || "Elder") + '</b>' +
+            (entry.tribe ? ' · <span class="tribe-tag">' + esc(entry.tribe) + "</span>" : "") +
+          "</p>" +
+          '<blockquote class="val-quote">“' + esc((entry.transcript || "").slice(0, 220)) + (entry.transcript && entry.transcript.length > 220 ? "…" : "") + "”</blockquote>" +
+          '<div class="val-meta">' +
+            '<span class="type-tag">Type C</span> ' +
+            '<span class="val-tag">' + esc(s.linked_prediction || entry.species_mentioned || "Field validation") + "</span>" +
+          "</div>" +
+          recHtml +
+          '<p class="val-signals"><strong>Sentinel signals:</strong> ' + esc(signals || "—") +
+            (live ? ' <span class="live-dot">● live</span>' : "") + "</p>" +
+          '<div class="val-actions">' +
+            '<button type="button" class="btn sm" data-view-entry="' + esc(entry.id) + '">Manage claim</button>' +
+            '<button type="button" class="btn sm" data-manage-sentinel="' + esc(s.id) + '">Edit link</button>' +
+            '<button type="button" class="btn sm" data-serial-sentinel="' + esc(s.id) + '">Serial</button>' +
+          "</div></article>"
+      );
+    }).join("");
+
+    grid.querySelectorAll("[data-manage-sentinel]").forEach((btn) => {
+      btn.addEventListener("click", () => openSentinel(btn.dataset.manageSentinel));
+    });
+    grid.querySelectorAll("[data-view-entry]").forEach((btn) => {
+      btn.addEventListener("click", () => openEntry(btn.dataset.viewEntry));
+    });
+    grid.querySelectorAll("[data-serial-sentinel]").forEach((btn) => {
+      btn.addEventListener("click", () => openSerialForSentinel(btn.dataset.serialSentinel));
+    });
+    grid.querySelectorAll("[data-goto-corpus]").forEach((btn) => {
+      btn.addEventListener("click", () => setView("corpus"));
+    });
+  }
+
   function renderSentinels() {
     const grid = $("sentinelGrid");
     if (!state.sentinels.length) {
@@ -413,7 +619,9 @@
       const inc = s.incharge || {};
       const health = sentinelHealth(s);
       const hCls = healthClass(health);
-      const cardCls = health < 40 ? "critical" : t.cuckoo_call_detected ? "alert" : "";
+      const entry = linkedCorpusEntry(s);
+      const badge = validationBadge(entry);
+      const cardCls = health < 40 ? "critical" : badge.rec === "BROKEN" || badge.label === "BROKEN" ? "alert" : "";
       const st = s.status || "offline";
       const maint = s.maintenance_status || "operational";
 
@@ -430,18 +638,38 @@
             (inc.phone ? '<br><span class="mono">' + esc(inc.phone) + '</span>' : "") +
           '</div>' +
           '<div class="health-bar ' + hCls + '"><span style="width:' + health + '%"></span></div>' +
-          '<p class="muted" style="font-size:11px;margin:0 0 10px">Health ' + health + '% · ' + esc(s.linked_prediction || "—") + '</p>' +
+          (entry
+            ? '<div class="sc-validation">' +
+                '<span class="sc-val-label">Validating</span>' +
+                '<p class="sc-val-quote">“' + esc((entry.transcript || "").slice(0, 90)) + (entry.transcript && entry.transcript.length > 90 ? "…" : "") + '”</p>' +
+                '<span class="val-badge ' + badge.cls + '">' + esc(badge.label) + "</span>" +
+              "</div>"
+            : '<p class="muted sc-unlinked">No elder claim linked — assign from Knowledge</p>') +
           '<div class="telemetry-grid">' +
-            '<div><b>' + (t.temp_c != null ? t.temp_c + "°C" : "—") + '</b><small>Box temp</small></div>' +
-            '<div><b>' + (t.humidity_pct != null ? t.humidity_pct + "%" : "—") + '</b><small>Humidity</small></div>' +
-            '<div><b>' + (t.rain_mm_24h != null ? t.rain_mm_24h + " mm" : "—") + '</b><small>Rain 24h</small></div>' +
-            '<div><b>' + (t.bioacoustic_events_24h != null ? t.bioacoustic_events_24h : "—") + '</b><small>Bio events</small></div>' +
-            '<div><b class="' + battClass(t.battery_pct) + '">' + (t.battery_pct != null ? t.battery_pct + "%" : "—") + (t.solar_charging ? ' <span class="solar-ico">' + (window.ArivuIcons ? ArivuIcons.svg("sun") : "") + "</span>" : "") + '</b><small>Battery</small></div>' +
-            '<div><b>' + (t.cuckoo_call_detected ? '<span style="color:var(--gold)">DETECTED</span>' : "—") + '</b><small>Cuckoo call</small></div>' +
+            (s.live_hardware
+              ? '<div><b>' + (t.temp_c != null ? t.temp_c + "°C" : "—") + '</b><small>Live temp</small></div>' +
+                '<div><b>' + (t.humidity_pct != null ? t.humidity_pct + "%" : "—") + '</b><small>Live humidity</small></div>' +
+                '<div><b>' + (t.gas != null ? "gas " + t.gas : "—") + '</b><small>MQ sensor</small></div>' +
+                '<div><b>' + (t.last_sound ? esc(String(t.last_sound).replace(/_/g, " ")) : "background") + '</b><small>Last sound</small></div>' +
+                '<div><b class="' + (t.lora_ok ? "status-ok" : "status-bad") + '">' + (t.lora_ok ? "OK" : "—") + '</b><small>LoRa</small></div>' +
+                '<div><b class="' + (t.sd_ok ? "status-ok" : "status-bad") + '">' + (t.sd_ok ? "OK" : "—") + '</b><small>SD card</small></div>'
+              : '<div><b>' + (t.temp_c != null ? t.temp_c + "°C" : "—") + '</b><small>Box temp</small></div>' +
+                '<div><b>' + (t.humidity_pct != null ? t.humidity_pct + "%" : "—") + '</b><small>Humidity</small></div>' +
+                '<div><b>' + (t.rain_mm_24h != null ? t.rain_mm_24h + " mm" : "—") + '</b><small>Rain 24h</small></div>' +
+                '<div><b>' + (t.bioacoustic_events_24h != null ? t.bioacoustic_events_24h : "—") + '</b><small>Bio events</small></div>' +
+                '<div><b class="' + battClass(t.battery_pct) + '">' + (t.battery_pct != null ? t.battery_pct + "%" : "—") + '</b><small>Battery</small></div>' +
+                '<div><b>' + esc(badge.label) + '</b><small>Kaalam</small></div>') +
           '</div>' +
+          (s.lat != null && s.lng != null
+            ? '<p class="muted mono" style="font-size:11px;margin:8px 0 0">' + esc(fmtCoords(s.lat, s.lng)) +
+              (s.location_stamped_at ? " · stamped " + esc(fmtTime(s.location_stamped_at)) : "") + "</p>"
+            : '<p class="muted" style="font-size:11px;margin:8px 0 0">Location not stamped — use mobile DEPLOY</p>') +
           '<div class="sc-actions">' +
-            '<button type="button" data-manage-sentinel="' + esc(s.id) + '">Manage box</button>' +
-            '<button type="button" data-feeds-sentinel="' + esc(s.id) + '">Live feeds</button>' +
+            '<button type="button" data-manage-sentinel="' + esc(s.id) + '">Manage</button>' +
+            '<button type="button" data-serial-sentinel="' + esc(s.id) + '">Serial</button>' +
+            (entry
+              ? '<button type="button" data-view-entry="' + esc(entry.id) + '">Claim</button>'
+              : '<button type="button" data-link-sentinel="' + esc(s.id) + '">Link elder</button>') +
           '</div>' +
         '</article>'
       );
@@ -450,14 +678,16 @@
     grid.querySelectorAll("[data-manage-sentinel]").forEach((btn) => {
       btn.addEventListener("click", () => openSentinel(btn.dataset.manageSentinel));
     });
-    grid.querySelectorAll("[data-feeds-sentinel]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        state.selectedSentinelId = btn.dataset.feedsSentinel;
-        loadFeedsForSentinel(btn.dataset.feedsSentinel);
-        const fg = $("feedsGrid");
-        if (fg) fg.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+    grid.querySelectorAll("[data-serial-sentinel]").forEach((btn) => {
+      btn.addEventListener("click", () => openSerialForSentinel(btn.dataset.serialSentinel));
     });
+    grid.querySelectorAll("[data-view-entry]").forEach((btn) => {
+      btn.addEventListener("click", () => openEntry(btn.dataset.viewEntry));
+    });
+    grid.querySelectorAll("[data-link-sentinel]").forEach((btn) => {
+      btn.addEventListener("click", () => openSentinel(btn.dataset.linkSentinel));
+    });
+    renderSentinelValidation();
   }
 
   function renderSentinelMini() {
@@ -469,10 +699,14 @@
     el.innerHTML = state.sentinels.map((s) => {
       const t = s.telemetry || {};
       const h = sentinelHealth(s);
+      const live = s.live_hardware && isLiveActive(s);
+      const detail = live && t.temp_c != null
+        ? t.temp_c + "°C · " + (t.humidity_pct != null ? t.humidity_pct + "%" : "—")
+        : h + "% · " + (t.battery_pct != null ? t.battery_pct + "%" : "—");
       return (
-        '<div class="mini-row">' +
-          '<span><b>' + esc(s.name) + '</b> <span class="muted">· ' + esc(s.status) + '</span></span>' +
-          '<span class="mini-batt ' + battClass(t.battery_pct) + '">' + h + '% · ' + (t.battery_pct != null ? t.battery_pct + "%" : "—") + '</span>' +
+        '<div class="mini-row' + (live ? " mini-live" : "") + '">' +
+          '<span><b>' + esc(s.name) + '</b> <span class="muted">· ' + esc(live ? "live" : s.status) + '</span></span>' +
+          '<span class="mini-batt">' + esc(detail) + '</span>' +
         '</div>'
       );
     }).join("");
@@ -514,15 +748,9 @@
     }).join("");
   }
 
-  function renderActivity() {
-    const el = $("activityLog");
-    if (!state.activity.length) {
-      el.innerHTML = "<li>Waiting for events…</li>";
-      return;
-    }
-    el.innerHTML = state.activity.map((a) =>
-      "<li><span>" + esc(a.time) + "</span>" + esc(a.msg) + "</li>"
-    ).join("");
+  function openSerialForSentinel(id) {
+    state.serialSentinelId = id;
+    setView("serial");
   }
 
   function corpusAudioUrl(e) {
@@ -612,6 +840,7 @@
     form.incharge_organisation.value = inc.organisation || "";
     form.linked_elder.value = s ? (s.linked_elder || "") : "";
     form.linked_prediction.value = s ? (s.linked_prediction || "") : "";
+    populateLinkedCorpusSelect(s ? s.linked_corpus_id : "");
     form.installed_date.value = s ? (s.installed_date || "") : new Date().toISOString().slice(0, 10);
     form.notes.value = s ? (s.notes || "") : "";
     $("sentinelId").value = s ? s.id : "";
@@ -622,6 +851,8 @@
   async function saveSentinel() {
     const form = $("sentinelForm");
     const id = $("sentinelId").value;
+    const linkedCorpusId = ($("sentinelLinkedCorpus") && $("sentinelLinkedCorpus").value) || "";
+    const linkedEntry = linkedCorpusId ? state.corpus.find((e) => e.id === linkedCorpusId) : null;
     const payload = {
       name: form.name.value.trim(),
       location: form.location.value.trim(),
@@ -633,8 +864,9 @@
         phone: form.incharge_phone.value.trim(),
         organisation: form.incharge_organisation.value.trim(),
       },
-      linked_elder: form.linked_elder.value.trim(),
-      linked_prediction: form.linked_prediction.value.trim(),
+      linked_corpus_id: linkedCorpusId || null,
+      linked_elder: form.linked_elder.value.trim() || (linkedEntry && linkedEntry.elder_name) || "",
+      linked_prediction: form.linked_prediction.value.trim() || (linkedEntry && (linkedEntry.prediction || linkedEntry.species_mentioned)) || "",
       installed_date: form.installed_date.value,
       notes: form.notes.value.trim(),
     };
@@ -653,75 +885,6 @@
     } catch (err) {
       alert("Save failed: " + (err.message || err));
     }
-  }
-
-  async function loadFeedsForSentinel(id) {
-    const s = state.sentinels.find((x) => x.id === id);
-    if (!s || !window.ArivuHub) return;
-    $("feedsGrid").innerHTML = '<p class="empty">Fetching Open-Meteo + GBIF…</p>';
-    try {
-      const data = await ArivuHub.fetchFeeds(s.lat, s.lng, "Cuculus micropterus");
-      state.feeds = [{ sentinel: s, ...data }];
-      renderFeeds();
-      log("Loaded feeds for " + s.name);
-    } catch (e) {
-      $("feedsGrid").innerHTML = '<p class="empty">Feed error: ' + esc(e.message || e) + '</p>';
-    }
-  }
-
-  async function loadAllFeeds() {
-    if (!state.sentinels.length || !window.ArivuHub) {
-      $("feedsGrid").innerHTML = '<p class="empty">No sentinels to load feeds for</p>';
-      return;
-    }
-    $("feedsGrid").innerHTML = '<p class="empty">Loading feeds for all boxes…</p>';
-    try {
-      const results = await Promise.all(
-        state.sentinels.map(async (s) => {
-          const data = await ArivuHub.fetchFeeds(s.lat, s.lng, "Cuculus micropterus");
-          return { sentinel: s, ...data };
-        })
-      );
-      state.feeds = results;
-      renderFeeds();
-    } catch (e) {
-      $("feedsGrid").innerHTML = '<p class="empty">Feed error: ' + esc(e.message || e) + '</p>';
-    }
-  }
-
-  function renderFeeds() {
-    const grid = $("feedsGrid");
-    if (!state.feeds.length) {
-      grid.innerHTML = '<p class="empty">Select a sentinel or refresh to load live data</p>';
-      return;
-    }
-    grid.innerHTML = state.feeds.map((f) => {
-      const s = f.sentinel;
-      const w = f.weather && f.weather.current;
-      const gb = f.gbif || {};
-      const daily = f.weather && f.weather.daily;
-      const rain3d = daily && daily.precipitation_sum
-        ? daily.precipitation_sum.reduce((a, b) => a + b, 0).toFixed(1)
-        : "—";
-      const src = (CFG && CFG.externalSources) || {};
-      return (
-        '<article class="feed-card">' +
-          '<h3>' + esc(s.name) + '</h3>' +
-          '<p class="feed-source">' + esc(s.location) + ' · ' + esc(s.lat) + ', ' + esc(s.lng) + '</p>' +
-          '<p class="muted" style="font-size:12px;margin:0 0 12px">In-charge: <b>' + esc((s.incharge && s.incharge.name) || "—") + '</b></p>' +
-          '<div class="feed-metrics">' +
-            '<div><b>' + (w ? w.temperature_2m + "°C" : "—") + '</b><small>Open-Meteo · temp now</small></div>' +
-            '<div><b>' + (w ? w.relative_humidity_2m + "%" : "—") + '</b><small>Open-Meteo · humidity</small></div>' +
-            '<div><b>' + (w ? w.precipitation + " mm" : "—") + '</b><small>Open-Meteo · rain now</small></div>' +
-            '<div><b>' + rain3d + ' mm</b><small>Open-Meteo · 3-day rain</small></div>' +
-            '<div><b>' + (gb.count != null ? gb.count.toLocaleString() : "—") + '</b><small>GBIF · cuckoo records (30km)</small></div>' +
-            '<div><b>' + esc((s.telemetry && s.telemetry.temp_c) != null ? s.telemetry.temp_c + "°C" : "—") + '</b><small>Sentinel · box reading</small></div>' +
-          '</div>' +
-          '<a class="feed-link" href="' + esc((src.weather && src.weather.url) || "https://open-meteo.com") + '" target="_blank" rel="noopener">Open-Meteo ↗</a> ' +
-          '<a class="feed-link" href="' + esc((src.species && src.species.url) || "https://www.gbif.org") + '" target="_blank" rel="noopener">GBIF ↗</a>' +
-        '</article>'
-      );
-    }).join("");
   }
 
   function renderDataset() {
@@ -839,7 +1002,7 @@
     return map;
   }
 
-  function renderCorpusOnMap(map, markers) {
+  function renderCorpusOnMap(map, markers, opts) {
     markers.forEach((m) => map.removeLayer(m));
     markers.length = 0;
 
@@ -865,6 +1028,8 @@
       markers.push(marker);
     });
 
+    if (opts && opts.fit === false) return;
+
     const pts = state.corpus.map(coords).filter(Boolean);
     if (pts.length > 1) {
       map.fitBounds(pts, { padding: [30, 30], maxZoom: 11 });
@@ -873,81 +1038,384 @@
     }
   }
 
-  function renderMaps() {
-    if (!mapOverview) { mapOverview = initMap("mapOverview"); addGroveMarker(mapOverview); }
-
-    renderCorpusOnMap(mapOverview, corpusMarkers);
-    if (window.ArivuSentinels) ArivuSentinels.render(mapOverview, state.sentinels);
-    setTimeout(() => { mapOverview.invalidateSize(); }, 100);
-
-    // Map view uses the bespoke illustrated Western Ghats map (no tiles).
-    renderGhatsMap();
+  function mapDataBounds() {
+    const pts = [
+      ...state.corpus.map(coords).filter(Boolean),
+      ...state.sentinels.filter((s) => s.lat != null && s.lng != null).map((s) => [s.lat, s.lng]),
+    ];
+    return pts;
   }
 
-  function renderGhatsMap() {
-    if (!window.ArivuGhatsMap || !$("mapFull")) return;
-    ArivuGhatsMap.render($("mapFull"), {
-      corpus: state.corpus,
-      sentinels: state.sentinels,
-      onRegionClick: (name) => { setView("areas"); selectArea(name); },
+  function fitMapToData(map) {
+    const pts = mapDataBounds();
+    const center = (CFG && CFG.region && CFG.region.center) || [11.6854, 76.132];
+    if (pts.length > 1) {
+      map.fitBounds(pts, { padding: [40, 40], maxZoom: 12 });
+    } else if (pts.length === 1) {
+      map.setView(pts[0], 11);
+    } else {
+      map.setView(center, 9);
+    }
+  }
+
+  function renderFullMap() {
+    if (!$("mapFull")) return;
+    if (!mapFull) mapFull = initMap("mapFull");
+    renderCorpusOnMap(mapFull, fullCorpusMarkers, { fit: false });
+    if (window.ArivuSentinels) ArivuSentinels.render(mapFull, state.sentinels);
+    fitMapToData(mapFull);
+    setTimeout(() => { mapFull.invalidateSize(); }, 100);
+  }
+
+  function renderMaps() {
+    if ($("mapOverview")) {
+      if (!mapOverview) mapOverview = initMap("mapOverview");
+      renderCorpusOnMap(mapOverview, overviewCorpusMarkers, { fit: false });
+      if (window.ArivuSentinels) ArivuSentinels.render(mapOverview, state.sentinels);
+      fitMapToData(mapOverview);
+      setTimeout(() => { mapOverview.invalidateSize(); }, 100);
+    }
+    if (state.currentView === "map") renderFullMap();
+  }
+
+  // ---- live hardware sentinel (ESP32 → gateway → hub) ----
+
+  function isLiveActive(s) {
+    if (!s || !s.last_live_at) return false;
+    return Date.now() - new Date(s.last_live_at).getTime() < 120_000;
+  }
+
+  function liveSentinelFromState() {
+    return state.sentinels.find((s) => s.id === getLiveSentinelId()) || null;
+  }
+
+  function setOpsPill(id, online, label, detail) {
+    const el = $(id);
+    if (!el) return;
+    el.className = "ov-sys" + (online ? " online" : online === false ? " offline" : "");
+    const val = el.querySelector(".ov-sys-val, .ops-pill-val");
+    if (val) val.textContent = detail || label || "—";
+  }
+
+  async function updateSystemStatus() {
+    if (!window.ArivuHub) return;
+    try {
+      const st = await ArivuHub.fetchSystemStatus();
+      setOpsPill("opsHub", true, "Hub", "Online · :" + (st.hub && st.hub.port ? st.hub.port : "8787"));
+      const gw = st.gateway || {};
+      state.gatewaySentinelId = gw.sentinel_id || getLiveSentinelId();
+      setOpsPill("opsGateway", !!gw.online, "Gateway", gw.online ? "Forwarding" : "Not connected");
+      setOpsPill("opsSerial", !!gw.online, "USB serial", gw.serial_port || (gw.online ? "Active" : "No data"));
+      const live = st.live_sentinel || {};
+      setOpsPill("opsLive", !!live.online, "Live box", live.online ? (live.name || live.id) : "Offline");
+
+      const setDd = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
+      setDd("setStatHub", "Online · " + ArivuHub.baseUrl());
+      setDd("setStatGateway", gw.online ? "Connected · forwarding" : "Offline — run make or make gateway");
+      setDd("setStatPort", gw.serial_port || "—");
+      setDd("setStatSentinel", (live.name || live.id || "—") + (live.online ? " · LIVE" : " · offline"));
+      setDd("setStatSerial", gw.last_line_at ? fmtTime(gw.last_line_at) : "—");
+    } catch {
+      setOpsPill("opsHub", false, "Hub", "Offline");
+      setOpsPill("opsGateway", false, "Gateway", "—");
+      setOpsPill("opsSerial", false, "USB serial", "—");
+      setOpsPill("opsLive", false, "Live box", "—");
+    }
+  }
+
+  function serialLineClass(line) {
+    if (/^>>>/.test(line)) return "serial-alert";
+    if (/^\[(REC|LISTEN|STOP)/.test(line)) return "serial-status";
+    if (/^\[AI\]/.test(line) || /^#/.test(line)) return "serial-meta";
+    return "";
+  }
+
+  function serialLineVisible(line) {
+    const listenOn = !$("serialFilterListen") || $("serialFilterListen").checked;
+    const alertOn = !$("serialFilterAlert") || $("serialFilterAlert").checked;
+    if (/^>>>/.test(line)) return alertOn;
+    if (/^\[(REC|LISTEN|STOP)/.test(line)) return listenOn;
+    return true;
+  }
+
+  async function refreshAll() {
+    await refresh();
+    await updateLiveSentinel();
+    await updateAlerts();
+    await updateSystemStatus();
+    if (state.currentView === "serial") {
+      renderSerialSentinelTabs();
+      await updateSerialMonitor();
+    }
+    if (state.currentView === "map") renderFullMap();
+    if (state.currentView === "sentinels") renderSentinelValidation();
+  }
+
+  function renderSerialSentinelTabs() {
+    const wrap = $("serialSentinelTabs");
+    if (!wrap) return;
+    const list = state.sentinels.length ? state.sentinels : [{ id: getLiveSentinelId(), name: "Kaavu Sentinel 01", live_hardware: true }];
+    if (!state.serialSentinelId) state.serialSentinelId = list.find((s) => s.live_hardware)?.id || list[0].id;
+
+    wrap.innerHTML = list.map((s) => {
+      const live = s.live_hardware && isLiveActive(s);
+      const active = s.id === state.serialSentinelId;
+      return (
+        '<button type="button" class="serial-sentinel-btn' + (active ? " active" : "") + '" data-serial-id="' + esc(s.id) + '">' +
+          '<span class="serial-sentinel-name">' + esc(s.name) + "</span>" +
+          '<span class="serial-sentinel-id mono muted">' + esc(s.id) + "</span>" +
+          '<span class="serial-sentinel-status ' + (live ? "live" : "idle") + '">' + (live ? "● Live" : s.live_hardware ? "Hardware" : "Simulated") + "</span>" +
+        "</button>"
+      );
+    }).join("");
+
+    wrap.querySelectorAll("[data-serial-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.serialSentinelId = btn.dataset.serialId;
+        renderSerialSentinelTabs();
+        updateSerialMonitor();
+      });
+    });
+
+    const sel = list.find((s) => s.id === state.serialSentinelId);
+    if ($("serialPanelTitle")) $("serialPanelTitle").textContent = (sel && sel.name) || "Serial monitor";
+    if ($("serialPanelMeta")) {
+      const gw = state.gatewaySentinelId;
+      const isActive = sel && sel.live_hardware && gw === sel.id;
+      $("serialPanelMeta").textContent = isActive
+        ? "Receiving USB serial for this box · close Arduino Serial Monitor first"
+        : sel && sel.live_hardware
+          ? "No USB stream for this ID — set gateway ARIVU_SENTINEL_ID=" + sel.id
+          : "Simulated sentinel — no physical serial stream";
+    }
+  }
+
+  function serialLinesForSelected(allLines) {
+    const sid = state.serialSentinelId || getLiveSentinelId();
+    const gw = state.gatewaySentinelId;
+    if (!sid) return [];
+    return (allLines || []).filter((e) => {
+      if (e.sentinel_id) return e.sentinel_id === sid;
+      return sid === (gw || getLiveSentinelId());
     });
   }
-
-  // ---- live grove sentinel (real LoRa data via /api/sentinel/data) ----
-  const GROVE = { id: "grove_1", name: "Kaavu Sentinel 01", place: "Meppadi, Wayanad", lat: 11.6854, lng: 76.1320 };
-
-  function grovePopupHtml(temp) {
-    return "<b>" + GROVE.name + "</b><br>" + GROVE.place + "<br>" +
-      'Status: <span style="color:#1b6b47">● Online</span><br>' +
-      'Last reading: <span id="grove1-temp">' + (temp || "--") + "</span>°C";
+  function renderSerialMonitor() {
+    const el = $("serialMonitor");
+    if (!el) return;
+    const sid = state.serialSentinelId || getLiveSentinelId();
+    const sel = state.sentinels.find((s) => s.id === sid);
+    const lines = state.serialLines.filter((e) => serialLineVisible(e.line));
+    if (!lines.length) {
+      const msg = sel && !sel.live_hardware
+        ? "Simulated sentinel — no USB serial stream for " + sid
+        : "No serial lines yet — plug in ESP32, run make, and select the live box";
+      el.innerHTML = '<span class="serial-empty">' + esc(msg) + "</span>";
+      return;
+    }
+    el.innerHTML = lines.slice().reverse().map((e) => {
+      const t = e.ts ? new Date(e.ts).toLocaleTimeString("en-IN", { hour12: false }) : "";
+      return '<div class="serial-line ' + serialLineClass(e.line) + '">' +
+        '<span class="serial-ts">' + esc(t) + "</span>" +
+        '<span class="serial-txt">' + esc(e.line) + "</span></div>";
+    }).join("");
+    if (!state.serialPaused) el.scrollTop = el.scrollHeight;
   }
 
-  function addGroveMarker(map) {
-    if (!window.L) return;
-    const m = L.marker([GROVE.lat, GROVE.lng]).addTo(map);
-    m.bindPopup(grovePopupHtml("--"));
-    groveMarkers.push(m);
+  async function updateSerialMonitor() {
+    if (!window.ArivuHub || state.serialPaused) return;
+    if (state.currentView !== "serial" && state.currentView !== "settings") return;
+    try {
+      const sid = state.serialSentinelId || getLiveSentinelId();
+      const data = await ArivuHub.fetchSerialLog(200, sid);
+      state.serialLines = serialLinesForSelected(data.lines || []);
+      state.gatewaySentinelId = (data.gateway && data.gateway.sentinel_id) || getLiveSentinelId();
+      renderSerialMonitor();
+      if (state.currentView === "serial") renderSerialSentinelTabs();
+      const gw = data.gateway || {};
+      if (gw.last_line_at && $("setStatSerial")) $("setStatSerial").textContent = fmtTime(gw.last_line_at);
+    } catch { /* hub offline */ }
+  }
+
+  function applySettingsForm() {
+    const s = loadSettings();
+    const hub = $("setHubUrl"); if (hub) hub.value = s.hubUrl || DEFAULT_SETTINGS.hubUrl;
+    const sid = $("setLiveSentinelId"); if (sid) sid.value = s.liveSentinelId || DEFAULT_SETTINGS.liveSentinelId;
+    const poll = $("setPollSec"); if (poll) poll.value = s.pollIntervalSec || DEFAULT_SETTINGS.pollIntervalSec;
+    const spoll = $("setSerialPollMs"); if (spoll) spoll.value = s.serialPollMs || DEFAULT_SETTINGS.serialPollMs;
+    const theme = $("setTheme"); if (theme) theme.value = currentTheme();
+    const lang = $("setLang");
+    if (lang && window.ArivuI18n) {
+      lang.innerHTML = ArivuI18n.LANGS.map((l) => '<option value="' + l.code + '">' + l.label + "</option>").join("");
+      lang.value = ArivuI18n.getLang();
+    }
+  }
+
+  function saveSettingsFromForm() {
+    const patch = {
+      hubUrl: ($("setHubUrl") && $("setHubUrl").value.trim()) || DEFAULT_SETTINGS.hubUrl,
+      liveSentinelId: ($("setLiveSentinelId") && $("setLiveSentinelId").value.trim()) || DEFAULT_SETTINGS.liveSentinelId,
+      pollIntervalSec: Number($("setPollSec") && $("setPollSec").value) || DEFAULT_SETTINGS.pollIntervalSec,
+      serialPollMs: Number($("setSerialPollMs") && $("setSerialPollMs").value) || DEFAULT_SETTINGS.serialPollMs,
+    };
+    if (window.ArivuHub) ArivuHub.saveSettings(patch);
+    log("Settings saved");
+    restartPollers();
+    updateSystemStatus();
+    updateLiveSentinel();
+  }
+
+  function resetSettings() {
+    if (window.ArivuHub) ArivuHub.saveSettings({});
+    applySettingsForm();
+    log("Settings reset to defaults");
+    restartPollers();
+  }
+
+  function restartPollers() {
+    if (pollTimer) clearInterval(pollTimer);
+    if (serialTimer) clearInterval(serialTimer);
+    if (systemTimer) clearInterval(systemTimer);
+    const s = loadSettings();
+    pollTimer = setInterval(refreshAll, (s.pollIntervalSec || 15) * 1000);
+    serialTimer = setInterval(updateSerialMonitor, s.serialPollMs || 1000);
+    systemTimer = setInterval(updateSystemStatus, 3000);
+  }
+
+  function fmtCoords(lat, lng) {
+    if (lat == null || lng == null) return "—";
+    return Number(lat).toFixed(4) + "°N, " + Number(lng).toFixed(4) + "°E";
+  }
+
+  function fmtDeploymentLocation(s) {
+    if (!s || s.lat == null || s.lng == null) {
+      return { html: '<span class="status-warn">Not stamped yet</span><br><span class="muted" style="font-size:12px">BMC worker: open mobile app → DEPLOY → Stamp location</span>', stamped: false };
+    }
+    const coords = fmtCoords(s.lat, s.lng);
+    const who = s.location_stamped_by ? esc(s.location_stamped_by) : "Field worker";
+    const when = s.location_stamped_at ? esc(fmtTime(s.location_stamped_at)) : "";
+    const place = s.location ? esc(s.location) : "";
+    return {
+      html: coords + (place ? "<br><span class=\"muted\" style=\"font-size:12px\">" + place + "</span>" : "") +
+        "<br><span class=\"muted\" style=\"font-size:12px\">Stamped by " + who + (when ? " · " + when : "") + "</span>",
+      stamped: true,
+    };
+  }
+
+  function mergeLiveSentinel(sentinel, reading) {
+    if (!sentinel) return null;
+    const merged = { ...sentinel, telemetry: { ...(sentinel.telemetry || {}) } };
+    if (!reading) return merged;
+    const t = merged.telemetry;
+    if (reading.temperature != null) t.temp_c = reading.temperature;
+    if (reading.humidity != null) t.humidity_pct = reading.humidity;
+    if (reading.gas != null) t.gas = reading.gas;
+    if (reading.smoke != null) t.smoke = reading.smoke;
+    if (reading.vibration_rate != null) t.vibration_rate = reading.vibration_rate;
+    if (reading.sd_ok != null) t.sd_ok = reading.sd_ok;
+    if (reading.lora_ok != null) t.lora_ok = reading.lora_ok;
+    if (reading.recording != null) t.recording = reading.recording;
+    if (reading.link != null) t.link = reading.link;
+    if (reading.sound_label != null) {
+      t.current_sound = reading.sound_label;
+      t.current_sound_conf = reading.sound_conf;
+    }
+    if (reading.sound_alert) {
+      t.last_sound = reading.sound_alert;
+      t.last_sound_conf = reading.sound_conf;
+      t.last_sound_at = reading.received_at;
+    }
+    if (reading.received_at) merged.last_live_at = reading.received_at;
+    merged.status = isLiveActive(merged) ? "online" : merged.status;
+    return merged;
+  }
+
+  function patchLiveSentinelInState(sentinel) {
+    if (!sentinel) return;
+    const i = state.sentinels.findIndex((s) => s.id === sentinel.id);
+    if (i >= 0) state.sentinels[i] = sentinel;
+    else state.sentinels.unshift(sentinel);
   }
 
   async function updateLiveSentinel() {
     if (!window.ArivuHub) return;
     try {
-      const res = await fetch(ArivuHub.baseUrl() + "/api/sentinel/data");
+      const res = await fetch(ArivuHub.baseUrl() + "/api/sentinel/live?id=" + encodeURIComponent(getLiveSentinelId()), { cache: "no-store" });
       if (!res.ok) return;
-      const data = await res.json();
-      if (!Array.isArray(data) || !data.length) return;
-      const latest = data[0];
+      const payload = await res.json();
+      const reading = payload.reading;
+      if (!reading) return;
+
+      const merged = mergeLiveSentinel(payload.sentinel || liveSentinelFromState(), reading);
+      if (merged) patchLiveSentinelInState(merged);
+
       const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
       const setHtml = (id, v) => { const el = $(id); if (el) el.innerHTML = v; };
       const ic = (n) => (window.ArivuIcons ? ArivuIcons.svg(n) : "");
-      if (latest.temperature != null) set("s1-temp", latest.temperature + "°C");
-      if (latest.humidity != null) set("s1-humid", latest.humidity + "%");
-      // Gas / fire (MQ sensor). smoke=true once gas crosses the fire threshold.
-      if (latest.smoke) setHtml("s1-smoke", '<span class="reading-alert">' + ic("flame") + " FIRE</span>");
-      else if (latest.gas != null) set("s1-smoke", "gas " + latest.gas);
+      const t = merged.telemetry || {};
+
+      if ($("liveSentinelTitle")) {
+        $("liveSentinelTitle").textContent = merged.name + " — " + merged.location;
+      }
+      if ($("liveSentinelMeta")) {
+        const active = isLiveActive(merged);
+        $("liveSentinelMeta").textContent = active
+          ? "● Live · " + (reading.link || "usb").toUpperCase() + " · " + getLiveSentinelId()
+          : "Offline — check ESP32 USB + gateway (Settings → System status)";
+      }
+      const badge = $("liveBadge");
+      if (badge) {
+        const active = isLiveActive(merged);
+        badge.textContent = active ? "LIVE" : "OFFLINE";
+        badge.className = "live-badge " + (active ? "on" : "off");
+      }
+
+      setHtml("s1-location", fmtDeploymentLocation(merged).html);
+
+      if (reading.temperature != null) set("s1-temp", reading.temperature + "°C");
+      if (reading.humidity != null) set("s1-humid", reading.humidity + "%");
+
+      if (reading.smoke) setHtml("s1-smoke", '<span class="reading-alert">' + ic("flame") + " FIRE</span>");
+      else if (reading.gas != null) set("s1-smoke", "gas " + reading.gas);
       else set("s1-smoke", "Clear");
-      // Vibration edges/sec (SW-420 tamper sensor).
-      if (latest.vibration_rate != null) {
-        const v = Number(latest.vibration_rate);
+
+      if (reading.vibration_rate != null) {
+        const v = Number(reading.vibration_rate);
         setHtml("s1-vib", v > 0
           ? '<span class="reading-alert">' + ic("activity") + " " + v + "/s</span>"
           : "0/s");
-      } else if (latest.sound_alert) {
-        set("s1-vib", String(latest.sound_alert));
-      } else {
-        set("s1-vib", "None");
-      }
-      set("grove1-temp", latest.temperature != null ? latest.temperature : "--");
-      // AI sound classification
-      if (latest.sound_alert) {
-        const pretty = String(latest.sound_alert).replace(/_/g, " ");
-        const pct = latest.sound_conf != null ? " " + Math.round(latest.sound_conf * 100) + "%" : "";
-        setHtml("s1-sound", '<span class="reading-alert">' + ic("activity") + " " + pretty + pct + "</span>");
+      } else set("s1-vib", "0/s");
+
+      const sound = reading.sound_label || reading.sound_alert || t.current_sound || t.last_sound;
+      const soundConf = reading.sound_conf != null ? reading.sound_conf : (t.current_sound_conf != null ? t.current_sound_conf : t.last_sound_conf);
+      if (sound && sound !== "--") {
+        const pretty = String(sound).replace(/_/g, " ");
+        const pct = soundConf != null && Number(soundConf) > 0 ? " " + Math.round(Number(soundConf) * 100) + "%" : "";
+        setHtml("s1-sound", '<span class="' + (sound === "background" ? "" : "reading-alert") + '">' + ic("activity") + " " + pretty + pct + "</span>");
       } else {
         set("s1-sound", "background");
       }
-      groveMarkers.forEach((m) => m.setPopupContent(grovePopupHtml(latest.temperature)));
-    } catch { /* gateway not connected yet — leave placeholders */ }
+
+      const lora = reading.lora_ok != null ? reading.lora_ok : t.lora_ok;
+      const sd = reading.sd_ok != null ? reading.sd_ok : t.sd_ok;
+      const link = reading.link || t.link || "usb";
+      setHtml("s1-link",
+        '<span class="' + (lora ? "status-ok" : "status-bad") + '">LoRa ' + (lora ? "OK" : "down") + "</span> · " +
+        '<span class="' + (sd ? "status-ok" : "status-bad") + '">SD ' + (sd ? "OK" : "—") + "</span> · " +
+        esc(String(link).toUpperCase()));
+
+      const mode = reading.recording ? "Recording" : (isLiveActive(merged) ? "Listening" : "Standby");
+      set("s1-mode", mode);
+
+      if (reading.received_at) {
+        set("s1-updated", fmtTime(reading.received_at));
+        if ($("lastSync")) $("lastSync").textContent = "Live · " + fmtTime(reading.received_at);
+      }
+
+      renderSentinelMini();
+      if (state.currentView === "overview") renderOverviewFleet();
+      if (state.currentView === "sentinels") renderSentinels();
+      if (state.currentView === "map") renderFullMap();
+    } catch { /* hub/gateway offline */ }
   }
 
   async function updateAlerts() {
@@ -960,10 +1428,12 @@
       if (!list) return;
       if (!Array.isArray(alerts) || !alerts.length) {
         list.innerHTML = '<p class="empty">No alerts yet</p>';
-        if ($("alertMeta")) $("alertMeta").textContent = "0 alerts";
+        if ($("alertMeta")) $("alertMeta").textContent = "none";
+        if ($("statAlerts")) $("statAlerts").textContent = "0";
         return;
       }
-      if ($("alertMeta")) $("alertMeta").textContent = alerts.length + " alert" + (alerts.length === 1 ? "" : "s");
+      if ($("alertMeta")) $("alertMeta").textContent = alerts.length + " in feed";
+      if ($("statAlerts")) $("statAlerts").textContent = String(alerts.length);
       list.innerHTML = alerts.map((a) => {
         const iconName = a.type === "smoke" || a.type === "fire" ? "flame"
           : a.type === "tamper" ? "alert"
@@ -996,9 +1466,15 @@
     $("viewSubtitle").textContent = window.ArivuI18n && subKeys[name] ? ArivuI18n.t(subKeys[name]) : meta.subtitle;
     $("searchWrap").hidden = name !== "corpus";
     if (name === "map") {
-      renderGhatsMap();
+      renderFullMap();
     }
-    if (name === "sentinels") loadAllFeeds();
+    if (name === "overview") {
+      renderOverview();
+      renderMaps();
+    }
+    if (name === "sentinels") renderSentinelValidation();
+    if (name === "serial") { renderSerialSentinelTabs(); updateSerialMonitor(); }
+    if (name === "settings") { applySettingsForm(); updateSystemStatus(); }
     if (window.ArivuAssistant) ArivuAssistant.setCurrentView(name);
   }
 
@@ -1007,8 +1483,7 @@
     getState: () => ({ ...state }),
     // Called by ArivuI18n after a language change — refresh JS-set strings.
     onLangChange: () => {
-      applyTheme(currentTheme());          // re-label the theme button
-      setView(state.currentView || "overview"); // re-translate title/subtitle
+      setView(state.currentView || "overview");
     },
   };
 
@@ -1016,13 +1491,6 @@
     const t = theme === "light" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", t);
     try { localStorage.setItem("arivu-theme", t); } catch (_) {}
-    const btn = $("themeToggle");
-    if (btn) {
-      const ic = window.ArivuIcons ? ArivuIcons.svg(t === "light" ? "moon" : "sun") : "";
-      const tr = window.ArivuI18n ? ArivuI18n.t(t === "light" ? "theme.dark" : "theme.light") : (t === "light" ? "Dark" : "Light");
-      btn.innerHTML = ic + ' <span class="btn-label">' + tr + "</span>";
-      btn.setAttribute("aria-label", t === "light" ? "Switch to dark mode" : "Switch to light mode");
-    }
     swapMapTiles();
   }
 
@@ -1030,28 +1498,12 @@
     let savedTheme = "dark";
     try { savedTheme = localStorage.getItem("arivu-theme") || "dark"; } catch (_) {}
     applyTheme(savedTheme);
-    const themeBtn = $("themeToggle");
-    if (themeBtn) {
-      themeBtn.addEventListener("click", () => {
-        applyTheme(currentTheme() === "light" ? "dark" : "light");
-      });
-    }
 
-    // Language selector + initial localisation
     if (window.ArivuI18n) {
-      const sel = $("langSelect");
-      if (sel) {
-        sel.innerHTML = ArivuI18n.LANGS
-          .map((l) => '<option value="' + l.code + '">' + l.label + "</option>")
-          .join("");
-        sel.value = ArivuI18n.getLang();
-        sel.addEventListener("change", () => ArivuI18n.setLang(sel.value));
-      }
       ArivuI18n.apply();
-      setView("overview"); // localise the initial title/subtitle
+      setView("overview");
     }
 
-    // Inject line icons into nav items + top-bar buttons (no emoji).
     if (window.ArivuIcons) {
       document.querySelectorAll(".nav-btn[data-icon]").forEach((btn) => {
         btn.insertAdjacentHTML("afterbegin", ArivuIcons.svg(btn.dataset.icon, "nav-ico"));
@@ -1060,9 +1512,7 @@
         const el = $(id);
         if (el) el.insertAdjacentHTML("afterbegin", ArivuIcons.svg(name) + " ");
       };
-      btnIcon("refreshBtn", "refresh");
       btnIcon("exportCsvBtn", "download");
-      btnIcon("activityToggle", "bell");
       btnIcon("addSentinelBtn", "radio");
       const fab = $("assistFab");
       if (fab) fab.innerHTML = ArivuIcons.svg("leaf", "fab-ico");
@@ -1072,29 +1522,6 @@
       btn.addEventListener("click", () => setView(btn.dataset.view));
     });
 
-    // Activity slide-over
-    const openActivity = () => {
-      renderActivity();
-      $("activityDrawer").hidden = false;
-      $("activityScrim").hidden = false;
-      requestAnimationFrame(() => {
-        $("activityDrawer").classList.add("open");
-        $("activityScrim").classList.add("open");
-      });
-    };
-    const closeActivity = () => {
-      $("activityDrawer").classList.remove("open");
-      $("activityScrim").classList.remove("open");
-      setTimeout(() => { $("activityDrawer").hidden = true; $("activityScrim").hidden = true; }, 250);
-    };
-    $("activityToggle").addEventListener("click", openActivity);
-    $("activityClose").addEventListener("click", closeActivity);
-    $("activityScrim").addEventListener("click", closeActivity);
-
-    $("refreshBtn").addEventListener("click", async () => {
-      await refresh();
-      if (document.querySelector("#view-sentinels.active")) loadAllFeeds();
-    });
     $("corpusSearch").addEventListener("input", (e) => {
       state.search = e.target.value;
       renderCorpusTable();
@@ -1112,17 +1539,56 @@
 
     $("exportCsvBtn").addEventListener("click", exportCsv);
 
-    log("Arivu Command initialized");
-    refresh();
+    const opsSettings = $("opsOpenSettings");
+    if (opsSettings) opsSettings.addEventListener("click", () => setView("settings"));
+    const ovMap = $("ovOpenMap");
+    if (ovMap) ovMap.addEventListener("click", () => setView("map"));
+    const ovSerial = $("ovOpenSerial");
+    if (ovSerial) ovSerial.addEventListener("click", () => openSerialForSentinel(getLiveSentinelId()));
+    const mapOv = $("mapOverview");
+    if (mapOv) mapOv.addEventListener("click", () => setView("map"));
+    document.querySelectorAll("[data-goto]").forEach((btn) => {
+      btn.addEventListener("click", () => setView(btn.dataset.goto));
+    });
 
-    // Live grove sensor + alert feeds (real data from ESP32 LoRa gateway → hub).
-    updateLiveSentinel();
-    updateAlerts();
-    setInterval(updateLiveSentinel, 5000);
+    const settingsForm = $("settingsForm");
+    if (settingsForm) {
+      settingsForm.addEventListener("submit", (e) => { e.preventDefault(); saveSettingsFromForm(); });
+    }
+    const settingsReset = $("settingsResetBtn");
+    if (settingsReset) settingsReset.addEventListener("click", resetSettings);
+    const setTheme = $("setTheme");
+    if (setTheme) setTheme.addEventListener("change", () => applyTheme(setTheme.value));
+    const setLang = $("setLang");
+    if (setLang && window.ArivuI18n) {
+      setLang.addEventListener("change", () => ArivuI18n.setLang(setLang.value));
+    }
+
+    const serialPause = $("serialPauseBtn");
+    if (serialPause) {
+      serialPause.addEventListener("click", () => {
+        state.serialPaused = !state.serialPaused;
+        serialPause.textContent = state.serialPaused ? "Resume" : "Pause";
+      });
+    }
+    const serialClear = $("serialClearBtn");
+    if (serialClear) {
+      serialClear.addEventListener("click", async () => {
+        state.serialLines = [];
+        renderSerialMonitor();
+        try { if (window.ArivuHub) await ArivuHub.clearSerialLog(); } catch (_) {}
+      });
+    }
+    ["serialFilterListen", "serialFilterAlert"].forEach((id) => {
+      const el = $(id);
+      if (el) el.addEventListener("change", renderSerialMonitor);
+    });
+
+    applySettingsForm();
+    refreshAll();
+    setInterval(updateLiveSentinel, 2000);
     setInterval(updateAlerts, 3000);
-
-    const pollMs = (CFG && CFG.hub && CFG.hub.pollIntervalMs) || 15000;
-    pollTimer = setInterval(refresh, pollMs);
+    restartPollers();
   }
 
   document.addEventListener("DOMContentLoaded", init);

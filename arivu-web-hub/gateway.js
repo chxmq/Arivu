@@ -32,6 +32,8 @@ const SENTINEL_ID = process.env.ARIVU_SENTINEL_ID || "grove_1";
 const SENTINEL_NAME = process.env.ARIVU_SENTINEL_NAME || "Kaavu Sentinel 01";
 const FIRE_THRESHOLD = Number(process.env.ARIVU_GAS_FIRE || 2000); // matches firmware
 
+const LOCATION_META = { sentinel_id: SENTINEL_ID };
+
 if (typeof fetch !== "function") {
   console.error("This gateway needs Node 18+ (global fetch). Upgrade Node and retry.");
   process.exit(1);
@@ -52,12 +54,26 @@ async function post(path, payload) {
 }
 
 function pushReading(extra) {
-  return post("/api/sentinel/data", { sentinel_id: SENTINEL_ID, ...extra });
+  return post("/api/sentinel/data", { ...LOCATION_META, ...extra });
 }
 
 function raiseAlert(type, message, severity) {
   console.log("  ⚠ alert:", type, "-", message);
   return post("/api/alerts", { type, message, severity: severity || "INFO" });
+}
+
+function pushSerialLine(raw) {
+  const line = String(raw).trim();
+  if (!line) return;
+  return post("/api/gateway/log", { line, sentinel_id: SENTINEL_ID });
+}
+
+function heartbeat(serialPort) {
+  return post("/api/gateway/heartbeat", {
+    serial_port: serialPort || null,
+    sentinel_id: SENTINEL_ID,
+    sentinel_name: SENTINEL_NAME,
+  });
 }
 
 // ---- parsing --------------------------------------------------------------
@@ -102,8 +118,9 @@ function handleStatusLine(line) {
     recording,
     sd_ok,
     lora_ok,
-    sound_alert,
+    sound_label: label,
     sound_conf,
+    sound_alert,
     link: "usb",
   });
 }
@@ -163,6 +180,7 @@ function handleLoRaPacket(line) {
 function handleLine(raw) {
   const line = String(raw).trim();
   if (!line) return;
+  pushSerialLine(line);
   if (line.startsWith("A|")) return handleLoRaPacket(line);      // LoRa receiver
   if (line.startsWith(">>>")) return handleDirectAlert(line);     // sentinel alert
   if (/^\[(REC|LISTEN|STOP)/.test(line) && /gas/.test(line)) return handleStatusLine(line);
@@ -194,9 +212,14 @@ async function pickPort() {
   const port = new SerialPort({ path, baudRate: BAUD });
   const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
 
-  port.on("open", () => console.log(`Serial open: ${path} @ ${BAUD}`));
+  port.on("open", () => {
+    console.log(`Serial open: ${path} @ ${BAUD}`);
+    heartbeat(path);
+  });
   port.on("error", (e) => console.error("Serial error:", e.message));
   parser.on("data", handleLine);
+
+  setInterval(() => heartbeat(path), 15_000);
 
   console.log(`Arivu gateway → forwarding ${SENTINEL_NAME} to ${HUB}`);
   console.log("(Close the Arduino Serial Monitor if the port is busy.)");

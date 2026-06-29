@@ -35,20 +35,19 @@
 
   function popupHtml(s) {
     const t = s.telemetry || {};
+    const claim = s.linked_prediction || s.linked_elder || "—";
+    const kaalam = s.linked_corpus_id ? "Linked to Knowledge claim" : "No elder claim linked";
     return (
       "<b>" + esc(s.name) + "</b><br>" +
       "<small>" + esc(s.location) + " · " + esc(s.id) + "</small><br>" +
       "<hr style='margin:6px 0;border-color:var(--border)'>" +
       "<b>Status:</b> " + esc(s.status) + "<br>" +
-      "<b>Linked:</b> " + esc(s.linked_prediction || "—") + "<br>" +
+      "<b>Validating:</b> " + esc(claim) + "<br>" +
+      "<small>" + esc(kaalam) + "</small><br>" +
       "<b>Temp:</b> " + (t.temp_c != null ? t.temp_c + "°C" : "—") +
       " · <b>RH:</b> " + (t.humidity_pct != null ? t.humidity_pct + "%" : "—") + "<br>" +
       "<b>Rain 24h:</b> " + (t.rain_mm_24h != null ? t.rain_mm_24h + " mm" : "—") +
       " · <b>Bio events:</b> " + (t.bioacoustic_events_24h != null ? t.bioacoustic_events_24h : "—") + "<br>" +
-      (t.cuckoo_call_detected
-        ? '<b style="color:var(--green);display:inline-flex;align-items:center;gap:4px">' +
-          ic("bird") + "Cuckoo call detected</b><br>"
-        : "") +
       "<b>Battery:</b> " + (t.battery_pct != null ? t.battery_pct + "%" : "—") +
       (t.solar_charging ? ' <span style="display:inline-flex;vertical-align:middle">' + ic("sun") + "</span>" : "")
     );

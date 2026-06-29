@@ -12,6 +12,7 @@ export default function RootLayout() {
         <Stack.Screen name="teach" options={{ headerShown: false }} />
         <Stack.Screen name="ask" options={{ headerShown: false }} />
         <Stack.Screen name="validate" options={{ headerShown: false }} />
+        <Stack.Screen name="deploy" options={{ headerShown: false }} />
         <Stack.Screen name="review" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>

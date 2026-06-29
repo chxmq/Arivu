@@ -1,8 +1,25 @@
 // Fetches corpus + sentinels from Arivu Hub. Falls back to local data if hub is offline.
 (function (global) {
   const DEFAULT_BASE = "http://localhost:8787";
+  const SETTINGS_KEY = "arivu-settings";
+
+  function getSettings() {
+    try {
+      const raw = global.localStorage && global.localStorage.getItem(SETTINGS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+    return {};
+  }
+
+  function saveSettings(patch) {
+    const next = Object.assign({}, getSettings(), patch);
+    try { global.localStorage.setItem(SETTINGS_KEY, JSON.stringify(next)); } catch (_) {}
+    return next;
+  }
 
   function baseUrl() {
+    const saved = getSettings().hubUrl;
+    if (saved) return String(saved).replace(/\/$/, "");
     const cfg = global.ArivuConfig && global.ArivuConfig.hub;
     if (cfg && cfg.url) return cfg.url.replace(/\/$/, "");
     if (location.protocol === "file:") return DEFAULT_BASE;
@@ -134,6 +151,8 @@
 
   global.ArivuHub = {
     baseUrl,
+    getSettings,
+    saveSettings,
     health,
     fetchDashboard,
     fetchSentinels,
@@ -145,6 +164,19 @@
     updateSentinel,
     createSentinel,
     fetchFeeds,
+    async fetchSystemStatus() {
+      return get("/api/system/status");
+    },
+    async fetchSerialLog(limit, sentinelId) {
+      const params = new URLSearchParams();
+      if (limit) params.set("limit", String(limit));
+      if (sentinelId) params.set("sentinel_id", sentinelId);
+      const q = params.toString() ? "?" + params.toString() : "";
+      return get("/api/gateway/log" + q);
+    },
+    async clearSerialLog() {
+      return post("/api/gateway/log/clear", {});
+    },
     async ask(question, viewerRole) {
       return post("/api/ask", { question, viewer_role: viewerRole || "OUTSIDER" });
     },
